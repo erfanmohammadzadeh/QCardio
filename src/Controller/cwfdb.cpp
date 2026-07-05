@@ -100,4 +100,51 @@ bool Cwfdb::readData(const SignalViewParameters &params)
     return false;
 }
 
+bool Cwfdb::readAnot(const SignalViewParameters &params)
+{
+    // AnnotationReader reader(params.dbPath, params.signalFilePath, "atr");
+    AnnotationReader reader(params.dbPath, params.signalFilePath, "atr");
+    if (!reader.loadAnnotations()) {
+        qCritical() << "Failed to load annotations";
+        return false;
+    }
+
+    double newFreq = params.targetFs;
+    auto Ann = reader.getAnnotations();
+    reader.applyResampling(newFreq);
+    auto resampledAnn = reader.getResampledAnnotations();
+    auto rrIntervals = reader.computeRRIntervals(resampledAnn, static_cast<int>(newFreq));
+
+    for(int i = 0; Ann.size(); i++)
+    {
+        qDebug() << Ann[i].time << resampledAnn[i].time << rrIntervals[i].interval;
+    }
+
+    // for (int i = 0; i < rrIntervals.size(); i++) {
+    //     qDebug() << QString("  %1").arg(rrIntervals[i].toString(static_cast<int>(newFreq)));
+    // }
+
+    if (!rrIntervals.isEmpty()) {
+        double meanRR = 0.0;
+        double minRR = rrIntervals[0].intervalSeconds;
+        double maxRR = rrIntervals[0].intervalSeconds;
+
+        for (const auto& rr : std::as_const(rrIntervals)) {
+            meanRR += rr.intervalSeconds;
+            minRR = qMin(minRR, rr.intervalSeconds);
+            maxRR = qMax(maxRR, rr.intervalSeconds);
+        }
+        meanRR /= rrIntervals.size();
+
+        qDebug() << "\nRR Interval Statistics:";
+        qDebug() << QString("  Mean: %1 ms").arg(meanRR * 1000, 0, 'f', 2);
+        qDebug() << QString("  Min: %1 ms").arg(minRR * 1000, 0, 'f', 2);
+        qDebug() << QString("  Max: %1 ms").arg(maxRR * 1000, 0, 'f', 2);
+        qDebug() << QString("  HR: %1 bpm").arg(60.0 / meanRR, 0, 'f', 1);
+    }
+    return true;
+}
+
+
+
 

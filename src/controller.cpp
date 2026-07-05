@@ -41,6 +41,7 @@ void Controller::sltOpenRecord(const SignalViewParameters& params)
 {
     QtConcurrent::run(QThreadPool::globalInstance(),[=] {
         bool success = m_cwfdb->readData(params);
+        success = m_cwfdb->readAnot(params) && success;
         Q_EMIT sigReadDataProcessEnd();
         return success;  // Return the result
     });
@@ -86,6 +87,7 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
 
                                                          // Directly call readData instead of using signal
                                                          success = m_cwfdb->readData(settingCopy);
+                                                         success = m_cwfdb->readAnot(settingCopy) && success;
                                                          if(success) m_csignalView->setData(m_cwfdb->getStructData());
 
                                                          if (!success)

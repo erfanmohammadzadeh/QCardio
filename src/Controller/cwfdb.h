@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <Models/sample.h>
 #include <Models/global_qcardio.h>
+#include <Models/annotationreader.h>
 
 class Cwfdb : public QObject
 {
@@ -21,7 +22,9 @@ public:
 
 
     void clearVec();
-    bool readData(const SignalViewParameters &params);
+    bool readData(const SignalViewParameters& params);
+    bool readAnot(const SignalViewParameters& params);
+
     MIT_BIH_ECGData getStructData() const;
 
 signals:

@@ -12,6 +12,7 @@ SOURCES += \
     Controller/csettings.cpp \
     Controller/csignalview.cpp \
     Controller/cwfdb.cpp \
+    Models/annotationreader.cpp \
     Models/directoryvalidator.cpp \
     Models/uiconfigs.cpp \
     Views/signalviewwidget.cpp \
@@ -31,6 +32,7 @@ HEADERS += \
     Controller/csettings.h \
     Controller/csignalview.h \
     Controller/cwfdb.h \
+    Models/annotationreader.h \
     Models/directoryvalidator.h \
     Models/sample.h \
     Models/uiconfigs.h \

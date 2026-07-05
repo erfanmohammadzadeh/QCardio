@@ -63,4 +63,20 @@ struct ExprotSetting
     bool compressingRequsted = true;
 };
 
+struct AnnotationData {
+    long time;           // Sample index
+    long timeResampled;
+    int anntyp;          // Annotation type code
+    QString symbol;      // Symbol like "N", "V", "Q"
+    QString description; // Description like "Normal beat"
+    int subtype;         // Subtype information
+    int channel;         // Channel number
+    int number;          // Additional number (e.g., waveform morphology)
+    QString aux;         // Auxiliary text (rhythm info, comments)
+
+    // Optional: Add a constructor for convenience
+    AnnotationData()
+        : time(0), anntyp(0), subtype(0), channel(0), number(0) {}
+};
+
 #endif // GLOBAL_QCARDIO_H
