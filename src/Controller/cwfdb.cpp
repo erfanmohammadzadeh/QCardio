@@ -110,31 +110,21 @@ bool Cwfdb::readAnot(const SignalViewParameters &params)
     }
 
     double newFreq = params.targetFs;
-    auto Ann = reader.getAnnotations();
     reader.applyResampling(newFreq);
-    auto resampledAnn = reader.getResampledAnnotations();
-    auto rrIntervals = reader.computeRRIntervals(resampledAnn, static_cast<int>(newFreq));
+    m_strData.anotList = reader.getResampledAnnotations();
+    m_strData.rrIntervals = reader.computeRRIntervals(m_strData.anotList, static_cast<int>(newFreq));
 
-    for(int i = 0; Ann.size(); i++)
-    {
-        qDebug() << Ann[i].time << resampledAnn[i].time << rrIntervals[i].interval;
-    }
-
-    // for (int i = 0; i < rrIntervals.size(); i++) {
-    //     qDebug() << QString("  %1").arg(rrIntervals[i].toString(static_cast<int>(newFreq)));
-    // }
-
-    if (!rrIntervals.isEmpty()) {
+    if (!m_strData.rrIntervals.isEmpty()) {
         double meanRR = 0.0;
-        double minRR = rrIntervals[0].intervalSeconds;
-        double maxRR = rrIntervals[0].intervalSeconds;
+        double minRR = m_strData.rrIntervals[0].intervalSeconds;
+        double maxRR = m_strData.rrIntervals[0].intervalSeconds;
 
-        for (const auto& rr : std::as_const(rrIntervals)) {
+        for (const auto& rr : std::as_const(m_strData.rrIntervals)) {
             meanRR += rr.intervalSeconds;
             minRR = qMin(minRR, rr.intervalSeconds);
             maxRR = qMax(maxRR, rr.intervalSeconds);
         }
-        meanRR /= rrIntervals.size();
+        meanRR /= m_strData.rrIntervals.size();
 
         qDebug() << "\nRR Interval Statistics:";
         qDebug() << QString("  Mean: %1 ms").arg(meanRR * 1000, 0, 'f', 2);

@@ -15,18 +15,7 @@ struct AnnotationStats {
         pacemakerBeats(0), artifactCount(0) {}
 };
 
-struct RRInterval {
-    long time1;     // Sample index of first beat
-    long time2;     // Sample index of second beat
-    long interval;  // Difference in samples
-    double intervalSeconds; // Interval in seconds
 
-    QString toString(int samplingRate) const {
-        return QString("RR = %1 samples (%2 ms)")
-        .arg(interval)
-            .arg(intervalSeconds * 1000, 0, 'f', 2);
-    }
-};
 
 class AnnotationReader {
 public:

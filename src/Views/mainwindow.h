@@ -58,7 +58,7 @@ private:
 
 Q_SIGNALS:
     void sigReadDataRequested(const SignalViewParameters& params);
-    void sigExportRequested(const QString& path);
+    void sigExportRequested(const ExprotSetting& path);
     void sigExportAllRequested(const ExprotSetting &setting);
 
 protected:

@@ -10,8 +10,12 @@ class CExporter : public QObject
     Q_OBJECT
 public:
     explicit CExporter(QObject *parent = nullptr);
-    void exportDataInSample(const MIT_BIH_ECGData& data, const QString &path);
-    bool exportDataInRC7(const MIT_BIH_ECGData& data, const QString &path);
+    void exportData(const MIT_BIH_ECGData& data, const ExprotSetting &exportSetting);
+
+private:
+    void exportDataInSample(const MIT_BIH_ECGData& data, const ExprotSetting &exportSetting);
+    bool exportDataInRC7(const MIT_BIH_ECGData& data, const ExprotSetting &exportSetting);
+    void saveCSV(const QString &filePath, const MIT_BIH_ECGData &data);
 
 signals:
 };

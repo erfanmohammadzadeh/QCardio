@@ -4,7 +4,15 @@ CExporter::CExporter(QObject *parent)
     : QObject{parent}
 {}
 
-void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const QString& path)
+void CExporter::exportData(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
+{
+    if(exportSetting.method == ExprotSetting::ExportMethod::RC7)
+        exportDataInRC7(data, exportSetting);
+    else if(exportSetting.method == ExprotSetting::ExportMethod::RawSample)
+        exportDataInSample(data, exportSetting);
+}
+
+void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSetting& exportSetting)
 {
     // Validate input
     if (data.totalSample <= 0 || data.nsigs.isEmpty()) {
@@ -49,7 +57,14 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const QString& p
     }
 
     // Generate filename with timestamp
-    QString filePath = path + QDir::separator() + QString("%1_%2.bin").arg(data.dbName, data.filename);
+    QString filePath = exportSetting.outputPath + QDir::separator() +
+                       QString("%1_%2.bin").arg(data.dbName, data.filename);
+
+    QString filePathCSV = exportSetting.outputPath + QDir::separator() +
+                          QString("%1_%2.csv").arg(data.dbName, data.filename);
+
+    if(exportSetting.exportCSV)
+        saveCSV(filePathCSV, data);
 
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -68,7 +83,7 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const QString& p
     file.close();
 }
 
-bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const QString &path)
+bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
 {
     if (data.nsigs.isEmpty()) {
         qDebug() << "No sample data to save";
@@ -207,8 +222,13 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const QString &path
     QByteArray compressedData = qCompress(rawData);
 
     // Save to file
-    QString filePath = path + QDir::separator() +
+    QString filePath = exportSetting.outputPath + QDir::separator() +
                        QString("%1_%2.rc7").arg(data.dbName, data.filename);
+    QString filePathCSV = exportSetting.outputPath + QDir::separator() +
+                          QString("%1_%2.csv").arg(data.dbName, data.filename);
+
+    if(exportSetting.exportCSV)
+        saveCSV(filePathCSV, data);
 
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -237,4 +257,24 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const QString &path
     }
 
     return true;
+}
+
+void CExporter::saveCSV(const QString &filePath, const MIT_BIH_ECGData& data)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+
+    // Header
+    int rows = data.anotList.size();
+
+    for (int i = 0; i < rows; ++i)
+    {
+        out << data.rrIntervals.at(i).time1/*qAbs(data.rrIntervals.at(i).time1/data.sampling)*/ << ","
+            << data.anotList.at(i).symbol << "\n";
+    }
+
+    file.close();
 }

@@ -47,11 +47,10 @@ void Controller::sltOpenRecord(const SignalViewParameters& params)
     });
 }
 
-void Controller::sltExportRequested(const QString &path)
+void Controller::sltExportRequested(const ExprotSetting &exportSetting)
 {
     QtConcurrent::run(QThreadPool::globalInstance(),[=] {
-        // m_cexporter->exportDataInSample(m_cwfdb->getStructData(), path);
-        m_cexporter->exportDataInRC7(m_cwfdb->getStructData(), path);
+        m_cexporter->exportData(m_cwfdb->getStructData(), exportSetting);
         Q_EMIT sigExportProcessEnd();
     });
 }
@@ -106,10 +105,7 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
                                                          qDebug() << "Exporting:" << id;
                                                          MIT_BIH_ECGData data = m_cwfdb->getStructData();
                                                          data.filename = id;
-                                                         if(setting.method == ExprotSetting::ExportMethod::RC7)
-                                                             m_cexporter->exportDataInRC7(data, setting.outputPath);
-                                                         else if(setting.method == ExprotSetting::ExportMethod::RawSample)
-                                                             m_cexporter->exportDataInSample(data, setting.outputPath);
+                                                         m_cexporter->exportData(data, setting);
                                                      }
                                                      else
                                                      {

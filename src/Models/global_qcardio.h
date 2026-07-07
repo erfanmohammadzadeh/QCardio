@@ -17,6 +17,35 @@ enum DirectoryValidationFlags {
     IsAbsolute = 0x40
 };
 
+struct AnnotationData {
+    long time;           // Sample index
+    long timeResampled;
+    int anntyp;          // Annotation type code
+    QString symbol;      // Symbol like "N", "V", "Q"
+    QString description; // Description like "Normal beat"
+    int subtype;         // Subtype information
+    int channel;         // Channel number
+    int number;          // Additional number (e.g., waveform morphology)
+    QString aux;         // Auxiliary text (rhythm info, comments)
+
+    // Optional: Add a constructor for convenience
+    AnnotationData()
+        : time(0), anntyp(0), subtype(0), channel(0), number(0) {}
+};
+
+struct RRInterval {
+    long time1;     // Sample index of first beat
+    long time2;     // Sample index of second beat
+    long interval;  // Difference in samples
+    double intervalSeconds; // Interval in seconds
+
+    QString toString(int samplingRate) const {
+        return QString("RR = %1 samples (%2 ms)")
+        .arg(interval)
+            .arg(intervalSeconds * 1000, 0, 'f', 2);
+    }
+};
+
 struct MIT_BIH_ECGData
 {
     QString filename;
@@ -26,6 +55,8 @@ struct MIT_BIH_ECGData
     QVector<QVector<qreal>> nsigs;
     quint8 selectedLead[LEAD_COUNT];
     QDateTime recordDate   = QDateTime(QDate(2000,1,1),QTime(0,0,0));
+    QVector<AnnotationData> anotList;
+    QVector<RRInterval> rrIntervals;
 
     void clear()
     {
@@ -61,22 +92,8 @@ struct ExprotSetting
     SignalViewParameters params;
     QStringList pathList;
     bool compressingRequsted = true;
+    bool exportCSV = true;
 };
 
-struct AnnotationData {
-    long time;           // Sample index
-    long timeResampled;
-    int anntyp;          // Annotation type code
-    QString symbol;      // Symbol like "N", "V", "Q"
-    QString description; // Description like "Normal beat"
-    int subtype;         // Subtype information
-    int channel;         // Channel number
-    int number;          // Additional number (e.g., waveform morphology)
-    QString aux;         // Auxiliary text (rhythm info, comments)
-
-    // Optional: Add a constructor for convenience
-    AnnotationData()
-        : time(0), anntyp(0), subtype(0), channel(0), number(0) {}
-};
 
 #endif // GLOBAL_QCARDIO_H

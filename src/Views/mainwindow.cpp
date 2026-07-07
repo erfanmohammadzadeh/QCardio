@@ -198,8 +198,9 @@ void MainWindow::on_pushButtonExport_clicked()
         expSetting.outputPath = path;
         expSetting.pathList = m_heaFilesWithPath;
         expSetting.compressingRequsted = ui->checkBoxCompression->isChecked();
+        expSetting.exportCSV = ui->checkBoxExportCSV->isChecked();
         if(!ui->checkBoxExportAllData->isChecked())
-            Q_EMIT sigExportRequested(path);
+            Q_EMIT sigExportRequested(expSetting);
         else
         {
             Q_EMIT sigExportAllRequested(expSetting);

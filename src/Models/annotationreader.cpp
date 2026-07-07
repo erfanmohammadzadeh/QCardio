@@ -9,7 +9,7 @@ bool AnnotationReader::loadAnnotations() {
 
     WFDB_Anninfo annInfo;
     annInfo.name = (char*)annotatorBA.constData();
-    annInfo.stat = WFDB_READ;
+    annInfo.stat = WFDB_READ;//for aha this should change to AHA
 
     if (annopen((char*)recordBA.constData(), &annInfo, 1) < 0) {
         qCritical() << "Failed to open XWS annotations for" << m_recordName;

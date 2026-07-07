@@ -28,7 +28,7 @@ signals:
 
 public Q_SLOTS:
     void sltOpenRecord(const SignalViewParameters& params);
-    void sltExportRequested(const QString& path);
+    void sltExportRequested(const ExprotSetting &path);
     void sltExportAllRequested(const ExprotSetting &setting);
 
 };
