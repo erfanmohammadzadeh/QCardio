@@ -10,6 +10,7 @@
 #include <QFileInfo>
 #include "Models/uiconfigs.h"
 #include "Controller/csettings.h"
+#include <QListWidget>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -31,6 +32,7 @@ public:
     void getUIConfig(UIConfigs &uiConfig);
 
     void setSetting(CSettings *newSetting);
+    void addFileToListWidget(QListWidget *windget, QStringList &filepath, QStringList& filename , const QString &type, const QString &path);
 
 private slots:
     void on_pushButtonSetPath_clicked();
@@ -44,6 +46,12 @@ private slots:
 
     void on_pushButtonUpdate_clicked();
 
+    void on_pushButtonData1_clicked();
+
+    void on_pushButtonData2_clicked();
+
+    void on_pushButtonCompare_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -54,12 +62,20 @@ private:
     int m_listItemIdx = 0;
     QStringList m_heaFilesWithPath;
     QStringList m_headerFilePath;
+
+    QStringList m_CSV1FilesWithPath;
+    QStringList m_CSV1FilePath;
+
+    QStringList m_CSV2FilesWithPath;
+    QStringList m_CSV2FilePath;
+
     CSettings *m_setting;
 
 Q_SIGNALS:
     void sigReadDataRequested(const SignalViewParameters& params);
     void sigExportRequested(const ExprotSetting& path);
     void sigExportAllRequested(const ExprotSetting &setting);
+    void sigAnalyseRequested(const AnalyseCfg cfg);
 
 protected:
     void closeEvent(QCloseEvent*event) override;

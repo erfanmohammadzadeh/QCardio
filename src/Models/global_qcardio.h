@@ -46,6 +46,12 @@ struct RRInterval {
     }
 };
 
+struct CSVFormat
+{
+    QVector<int> sampleIndex;
+    QVector<quint8> type;
+};
+
 struct MIT_BIH_ECGData
 {
     QString filename;
@@ -67,6 +73,18 @@ struct MIT_BIH_ECGData
         }
         nsigs.clear();
     }
+
+    CSVFormat toCSVFormat() const
+    {
+        CSVFormat converted;
+        for(const AnnotationData& anot : this->anotList)
+        {
+            converted.sampleIndex << anot.time;
+            converted.type << anot.anntyp;
+        }
+        return converted;
+    }
+
 };
 
 struct SignalViewParameters
@@ -95,5 +113,16 @@ struct ExprotSetting
     bool exportCSV = true;
 };
 
+struct CSVResult
+{
+    QVector<int> difSampleIndex;
+    QVector<bool> isTypeEqual;
+};
 
+struct AnalyseCfg
+{
+    QStringList csvPath1;
+    QStringList csvPath2;
+    QString outputPath;
+};
 #endif // GLOBAL_QCARDIO_H

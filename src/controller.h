@@ -9,6 +9,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QGuiApplication>
 #include "Controller/csettings.h"
+#include "Controller/canalyser.h"
 class Controller : public QObject
 {
     Q_OBJECT
@@ -30,6 +31,8 @@ public Q_SLOTS:
     void sltOpenRecord(const SignalViewParameters& params);
     void sltExportRequested(const ExprotSetting &path);
     void sltExportAllRequested(const ExprotSetting &setting);
+    void sltAnalyseRequested(const AnalyseCfg &analyseCfg);
+
 
 };
 

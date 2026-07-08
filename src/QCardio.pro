@@ -8,12 +8,15 @@ CONFIG += c++17
 # In order to do so, uncomment the following line.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 SOURCES += \
+    Controller/canalyser.cpp \
     Controller/cexporter.cpp \
     Controller/csettings.cpp \
     Controller/csignalview.cpp \
     Controller/cwfdb.cpp \
     Models/annotationreader.cpp \
+    Models/csv.cpp \
     Models/directoryvalidator.cpp \
+    Models/sheetanalyser.cpp \
     Models/uiconfigs.cpp \
     Views/signalviewwidget.cpp \
     controller.cpp \
@@ -28,13 +31,16 @@ SOURCES += \
 HEADERS += \
     Config/define.h \
     Config/structer.h \
+    Controller/canalyser.h \
     Controller/cexporter.h \
     Controller/csettings.h \
     Controller/csignalview.h \
     Controller/cwfdb.h \
     Models/annotationreader.h \
+    Models/csv.h \
     Models/directoryvalidator.h \
     Models/sample.h \
+    Models/sheetanalyser.h \
     Models/uiconfigs.h \
     Views/signalviewwidget.h \
     controller.h \

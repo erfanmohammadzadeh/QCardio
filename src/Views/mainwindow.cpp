@@ -83,6 +83,26 @@ void MainWindow::setSetting(CSettings *newSetting)
     m_setting = newSetting;
 }
 
+void MainWindow::addFileToListWidget(QListWidget *windget,
+                                     QStringList &filepath,
+                                     QStringList& filename,
+                                     const QString&type,
+                                     const QString&path)
+{
+    QDir dir(path);
+    filepath.clear();
+    filename.clear();
+    windget->clear();
+    QFileInfoList infoList = dir.entryInfoList();
+    for (const QFileInfo& info : std::as_const(infoList)) {
+        if (info.suffix() == type) {
+            filename << info.fileName().split(".").first();
+            filepath << info.filePath();
+        }
+    }
+    windget->addItems(filename);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     saveSetting();
@@ -100,18 +120,7 @@ void MainWindow::updateRecordList(const QString& recordDirectory)
 {
     if(!DirectoryValidator::validateDirectory(recordDirectory))
         return;
-
-    QDir dir(recordDirectory);
-    m_heaFilesWithPath.clear();
-    m_headerFilePath.clear();
-    ui->listWidgetItems->clear();
-    QFileInfoList infoList = dir.entryInfoList();
-    for (const QFileInfo& info : std::as_const(infoList)) {
-        if (info.suffix() == "hea") {
-            m_heaFilesWithPath << info.fileName().split(".").first();
-            m_headerFilePath << info.filePath();
-        }
-    }
+    addFileToListWidget(ui->listWidgetItems,m_headerFilePath,m_heaFilesWithPath,"hea", recordDirectory);
     ui->listWidgetItems->addItems(m_heaFilesWithPath);
 }
 
@@ -217,4 +226,49 @@ void MainWindow::on_pushButtonUpdate_clicked()
     on_pushButtonRead_clicked();
 }
 
+
+
+void MainWindow::on_pushButtonData1_clicked()
+{
+    QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 1 Directory", QDir::homePath());
+    if(DirectoryValidator::validateDirectory(path))
+    {
+        ui->lineEditPathData1->setText(path);
+        addFileToListWidget(ui->listWidgetDir1,
+                            m_CSV1FilePath,
+                            m_CSV1FilesWithPath, "csv", path);
+    }
+    else
+        QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
+
+}
+
+
+void MainWindow::on_pushButtonData2_clicked()
+{
+    QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 2 Directory", QDir::homePath());
+    if(DirectoryValidator::validateDirectory(path))
+    {
+        ui->lineEditPathData2->setText(path);
+        addFileToListWidget(ui->listWidgetDir2,m_CSV2FilePath,m_CSV2FilesWithPath, "csv", path);
+    }
+    else
+        QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
+}
+
+
+void MainWindow::on_pushButtonCompare_clicked()
+{
+    QString path = QFileDialog::getExistingDirectory(nullptr, "Select Comapre Result irectory", QDir::homePath());
+    if(DirectoryValidator::validateDirectory(path))
+    {
+        AnalyseCfg analyseCfg;
+        analyseCfg.csvPath1 = m_CSV1FilesWithPath;
+        analyseCfg.csvPath2 = m_CSV2FilesWithPath;
+        analyseCfg.outputPath = path;
+        Q_EMIT sigAnalyseRequested(analyseCfg);
+    }
+    else
+        QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
+}
 

@@ -27,10 +27,12 @@ Controller::Controller(QObject *parent)
             {
                 QMessageBox::information(nullptr, "Export", "Export Process Completed");
             });
+    connect(&m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
 
     m_cwfdb = new Cwfdb(this);
     m_csignalView = new CSignalView(this);
     m_cexporter = new CExporter(this);
+
     m_mainWindow.setSignalWidget(m_csignalView->windgetList());
     m_csetting.loadSetting(m_uiConfig);
     m_mainWindow.loadUIConfig(m_uiConfig);
@@ -131,4 +133,10 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
             });
 
     watcher->setFuture(future);
+}
+
+void Controller::sltAnalyseRequested(const AnalyseCfg& analyseCfg)
+{
+    CAnalyser analyse(nullptr, analyseCfg);
+    analyse.analyse();
 }

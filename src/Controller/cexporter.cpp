@@ -64,7 +64,11 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSett
                           QString("%1_%2.csv").arg(data.dbName, data.filename);
 
     if(exportSetting.exportCSV)
-        saveCSV(filePathCSV, data);
+    {
+
+        CSV file(nullptr, filePathCSV, data.toCSVFormat());
+        file.saveCSV();
+    }
 
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -228,7 +232,10 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting
                           QString("%1_%2.csv").arg(data.dbName, data.filename);
 
     if(exportSetting.exportCSV)
-        saveCSV(filePathCSV, data);
+    {
+        CSV file(nullptr, filePathCSV, data.toCSVFormat());
+        file.saveCSV();
+    }
 
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
@@ -259,22 +266,4 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting
     return true;
 }
 
-void CExporter::saveCSV(const QString &filePath, const MIT_BIH_ECGData& data)
-{
-    QFile file(filePath);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
 
-    QTextStream out(&file);
-
-    // Header
-    int rows = data.anotList.size();
-
-    for (int i = 0; i < rows; ++i)
-    {
-        out << data.rrIntervals.at(i).time1/*qAbs(data.rrIntervals.at(i).time1/data.sampling)*/ << ","
-            << data.anotList.at(i).symbol << "\n";
-    }
-
-    file.close();
-}

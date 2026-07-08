@@ -1,5 +1,11 @@
 #include "annotationreader.h"
 
+AnnotationReader::AnnotationReader(const QString &dbPath, const QString &recordName, const QString &annotatorName)
+    :m_databaseName(dbPath), m_recordName(recordName), m_annotatorName(annotatorName)
+{
+    setwfdb(const_cast<char*>(dbPath.toStdString().c_str()));
+}
+
 bool AnnotationReader::loadAnnotations() {
     qDebug() << "Record:" << m_recordName;
     m_annotatorName = "atr";
@@ -36,6 +42,11 @@ bool AnnotationReader::loadAnnotations() {
     wfdbquit();
     m_originalFrequency = sampfreq(annInfo.name);
     return true;
+}
+
+const QVector<AnnotationData> &AnnotationReader::getAnnotations() const
+{
+    return m_annotations;
 }
 
 QVector<RRInterval> AnnotationReader::computeRRIntervals(
@@ -89,18 +100,6 @@ QVector<AnnotationData> AnnotationReader::getResampledAnnotations() const {
         resampled.append(copy);
     }
     return resampled;
-}
-
-QVector<AnnotationData> AnnotationReader::getResampledQRSAnnotations() const {
-    QVector<AnnotationData> qrs;
-    for (const auto& ann : m_annotations) {
-        if (wfdb_isqrs(ann.anntyp)) {
-            AnnotationData copy = ann;
-            copy.time = ann.timeResampled;
-            qrs.append(copy);
-        }
-    }
-    return qrs;
 }
 
 long AnnotationReader::resampleTime(long oldSample, double oldFreq, double newFreq) {
