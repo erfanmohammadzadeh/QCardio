@@ -18,6 +18,7 @@ private:
     bool exportDataInRC7(const MIT_BIH_ECGData& data, const ExprotSetting &exportSetting);
 
 signals:
+    void sigExportProcessEnd();
 };
 
 #endif // CEXPORTER_H

@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     updateRecordList(ui->lineEditPath->text());
+    ui->tabWidget->setCurrentIndex(0);
     loadStyle();
 }
 

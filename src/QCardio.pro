@@ -69,3 +69,5 @@ win32 {
 
 RESOURCES += \
     Resource.qrc
+
+RC_ICONS = Res/image/icon.ico

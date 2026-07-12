@@ -10,6 +10,7 @@ void CExporter::exportData(const MIT_BIH_ECGData &data, const ExprotSetting &exp
         exportDataInRC7(data, exportSetting);
     else if(exportSetting.method == ExprotSetting::ExportMethod::RawSample)
         exportDataInSample(data, exportSetting);
+    Q_EMIT sigExportProcessEnd();
 }
 
 void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSetting& exportSetting)

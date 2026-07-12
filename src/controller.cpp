@@ -33,6 +33,8 @@ Controller::Controller(QObject *parent)
     m_csignalView = new CSignalView();
     m_cexporter = new CExporter(this);
 
+    connect(m_cexporter, &CExporter::sigExportProcessEnd, this,[=](){m_mainWindow.enableUIBtn(true);});
+
     m_mainWindow.setSignalWidget(m_csignalView->signalWidget());
     m_csetting.loadSetting(m_uiConfig);
     m_mainWindow.loadUIConfig(m_uiConfig);

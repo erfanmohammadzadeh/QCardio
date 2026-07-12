@@ -18,6 +18,9 @@ constexpr int kBottomMargin = 25;
 constexpr int kRightMargin = 30;
 constexpr qreal kMinorGridMm = 1.0;
 constexpr qreal kMajorGridMm = 5.0;
+constexpr int maxAmplitude = 40;
+constexpr int minAmplitude = -40;
+
 }
 
 SignalViewWidget::SignalViewWidget(QWidget *parent)
@@ -54,7 +57,7 @@ void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
     m_adcPerMv = qMax<qreal>(1.0, adcPerMillivolt);
     m_timeOffsetSec = 0.0;
 
-    autoScaleAndCenter();
+    // autoScaleAndCenter();
 
     update();
 }
@@ -197,7 +200,7 @@ qreal SignalViewWidget::timeToX(qreal timeSec, const QRectF &plotArea) const
 
 qreal SignalViewWidget::millivoltsToY(qreal millivolts, qreal stripCenterY, double signalDC) const
 {
-    return stripCenterY - millivolts * m_sensitivityMmPerMv * m_pixelsPerMm + signalDC/10;
+    return stripCenterY - millivolts * m_sensitivityMmPerMv * m_pixelsPerMm + signalDC/5;
 }
 
 void SignalViewWidget::drawGrid(QPainter &painter, const QRectF &plotArea)
@@ -226,7 +229,7 @@ void SignalViewWidget::drawGrid(QPainter &painter, const QRectF &plotArea)
             painter.drawLine(QPointF(x, strip.top()), QPointF(x, strip.bottom()));
         }
 
-        for (int step = -20; step <= 20; ++step) {
+        for (int step = minAmplitude; step <= maxAmplitude; ++step) {
             const qreal mv = step * mvPerMinor;
             const qreal y = millivoltsToY(mv, centerY);
             if (y < strip.top() || y > strip.bottom()) {
@@ -451,9 +454,9 @@ void SignalViewWidget::wheelEvent(QWheelEvent *event)
 
     const qreal scrollStep = m_visibleDurationSec * 0.08;
     if (delta > 0) {
-        m_timeOffsetSec -= scrollStep;
-    } else {
         m_timeOffsetSec += scrollStep;
+    } else {
+        m_timeOffsetSec -= scrollStep;
     }
 
     m_timeOffsetSec = qBound(0.0, m_timeOffsetSec, maxTimeOffset());
