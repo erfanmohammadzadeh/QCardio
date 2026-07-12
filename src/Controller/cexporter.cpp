@@ -68,7 +68,7 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSett
     {
 
         CSV file(nullptr, filePathCSV, data.toCSVFormat());
-        file.saveCSV();
+        file.saveSignal();
     }
 
     QFile file(filePath);
@@ -235,7 +235,7 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting
     if(exportSetting.exportCSV)
     {
         CSV file(nullptr, filePathCSV, data.toCSVFormat());
-        file.saveCSV();
+        file.saveSignal();
     }
 
     QFile file(filePath);

@@ -13,7 +13,8 @@ public:
     CSVFormat csvFormat() const;
     bool loadFromFile(const QString &path);
     void loadRequested();
-    void saveCSV();
+    void saveSignal();
+    void saveRawCSV();
     void comparesFile(const CSVFormat& csv1, const CSVFormat& csv2);
     QString getFilename() const;
 

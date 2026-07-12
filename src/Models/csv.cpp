@@ -62,7 +62,7 @@ void CSV::loadData(const QString &path)
     loadFromFile(path);
 }
 
-void CSV::saveCSV()
+void CSV::saveSignal()
 {
     QFile file(m_filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -80,10 +80,40 @@ void CSV::saveCSV()
 
     for (int i = numAnnotations-1; i >= 0; i--)
     {
-        long sampleIndex = m_csvFormat.sampleIndex.at(i) - minTime;
+        long sampleIndex = (m_csvFormat.sampleIndex.at(i) - minTime);
+        qDebug() << sampleIndex;
         out << sampleIndex/178 << ","
             << m_csvFormat.type.at(i) << "\n";
     }
+
+    file.close();
+}
+
+void CSV::saveRawCSV()
+{
+    QFile file(m_filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return;
+
+    QTextStream out(&file);
+    int numAnnotations = m_csvFormat.sampleIndex.size();
+
+    int qrsMachCount = 0;
+    for (int i = 0; i < numAnnotations-1; ++i)
+    {
+        long sampleIndex = m_csvFormat.sampleIndex.at(i);
+        bool isMach = false;
+        if(sampleIndex/178 < 3)
+        {
+            qrsMachCount++;
+            isMach = true;
+        }
+        out << sampleIndex << ","
+            << m_csvFormat.type.at(i) << ","
+            << (isMach ? "QRS mach" : "QRS not mach") << "\n";
+    }
+
+    out << "Mach Count" << "," << qrsMachCount;
 
     file.close();
 }
@@ -103,6 +133,5 @@ void CSV::comparesFile(const CSVFormat &csv1, const CSVFormat &csv2)
         m_csvFormat.sampleIndex << qAbs(csv1.sampleIndex.at(i) - csv2.sampleIndex.at(i));
         m_csvFormat.type << static_cast<quint8>(csv1.type.at(i) == csv2.type.at(i) ? 1 : 0);
     }
-
-    saveCSV();
+    saveRawCSV();
 }
