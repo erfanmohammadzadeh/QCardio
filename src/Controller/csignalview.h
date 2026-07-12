@@ -4,22 +4,19 @@
 #include <QObject>
 #include <Models/global_qcardio.h>
 #include <Views/signalviewwidget.h>
-class CSignalView : public QObject
+
+class CSignalView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit CSignalView(QObject *parent = nullptr);
+    explicit CSignalView(QWidget *parent = nullptr);
     ~CSignalView();
-    void createObj();
-    QList<SignalViewWidget*> m_windgetList;
-    SignalViewWidget *m_signalViewWidget1 = nullptr;
-    SignalViewWidget *m_signalViewWidget2 = nullptr;
-    SignalViewWidget *m_signalViewWidget3 = nullptr;
-    QList<SignalViewWidget *> windgetList() const;
 
-    void setData(const MIT_BIH_ECGData& data);
+    SignalViewWidget *signalWidget() const;
+    void setData(const MIT_BIH_ECGData &data);
 
-signals:
+private:
+    SignalViewWidget *m_signalViewWidget = nullptr;
 };
 
 #endif // CSIGNALVIEW_H

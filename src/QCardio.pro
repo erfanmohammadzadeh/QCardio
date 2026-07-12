@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui concurrent
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -29,8 +29,6 @@ SOURCES += \
     wfdb/wfdbio.c
 
 HEADERS += \
-    Config/define.h \
-    Config/structer.h \
     Controller/canalyser.h \
     Controller/cexporter.h \
     Controller/csettings.h \
@@ -59,14 +57,15 @@ qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-INCLUDEPATH += C:/curl-8.20.0_5/include
-LIBS += -LC:/curl-8.20.0_5/lib -lcurl
+unix {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += libcurl
+}
 
-
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+win32 {
+    INCLUDEPATH += C:/curl-8.20.0_5/include
+    LIBS += -LC:/curl-8.20.0_5/lib -lcurl
+}
 
 RESOURCES += \
     Resource.qrc

@@ -1,38 +1,44 @@
 #include "csignalview.h"
 
-CSignalView::CSignalView(QObject *parent)
-    : QObject{parent}
+namespace {
+const char *kLeadNames[] = {"I", "II", "V", "None"};
+
+QString leadLabelFromIndex(int index)
 {
-    createObj();
+    if (index >= 0 && index < 3) {
+        return QString::fromLatin1(kLeadNames[index]);
+    }
+    return QStringLiteral("None");
+}
+}
+
+CSignalView::CSignalView(QWidget *parent)
+    : QWidget(parent)
+    , m_signalViewWidget(new SignalViewWidget(this))
+{
 }
 
 CSignalView::~CSignalView()
 {
-    // qDeleteAll(m_windgetList);
-    m_windgetList.clear();
 }
 
-void CSignalView::createObj()
+SignalViewWidget *CSignalView::signalWidget() const
 {
-    m_windgetList.clear();
-    m_signalViewWidget1 = new SignalViewWidget();
-    m_signalViewWidget2 = new SignalViewWidget();
-    m_signalViewWidget3 = new SignalViewWidget();
-    m_windgetList.append(m_signalViewWidget1);
-    m_windgetList.append(m_signalViewWidget2);
-    m_windgetList.append(m_signalViewWidget3);
-}
-
-QList<SignalViewWidget *> CSignalView::windgetList() const
-{
-    return m_windgetList;
+    return m_signalViewWidget;
 }
 
 void CSignalView::setData(const MIT_BIH_ECGData &data)
 {
-    if(data.nsigs.empty()) return;
+    if (data.nsigs.isEmpty()) {
+        m_signalViewWidget->clearLeads();
+        return;
+    }
 
-    if(data.nsigs.size() > 0)m_signalViewWidget1->setData(data.nsigs[0]);
-    if(data.nsigs.size() > 1)m_signalViewWidget2->setData(data.nsigs[1]);
-    if(data.nsigs.size() > 2)m_signalViewWidget3->setData(data.nsigs[2]);
+    QStringList names;
+    const int leadCount = qMin(SignalViewWidget::MaxLeads, data.nsigs.size());
+    for (int i = 0; i < leadCount; ++i) {
+        names.append(leadLabelFromIndex(data.selectedLead[i]));
+    }
+
+    m_signalViewWidget->setLeads(data.nsigs, names, data.sampling);
 }

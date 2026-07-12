@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QCheckBox>
+#include <QCloseEvent>
 #include <QComboBox>
 #include <QSlider>
 
@@ -43,7 +44,7 @@ void MainWindow::on_pushButtonRead_clicked()
         QMessageBox::critical(nullptr, "Database Path", "Path is not readable");
 }
 
-void MainWindow::setupSignal(QGridLayout *mainLayout, SignalViewWidget* signalView)
+void MainWindow::setupSignal(QVBoxLayout *mainLayout, SignalViewWidget *signalView)
 {
     mainLayout->addWidget(signalView);
 }
@@ -109,11 +110,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
-void MainWindow::setSignalWidget(const QList<SignalViewWidget*> widgetList)
+void MainWindow::setSignalWidget(SignalViewWidget *signalWidget)
 {
-    setupSignal(ui->gridLayoutLead1, widgetList[0]);
-    setupSignal(ui->gridLayoutLead2, widgetList[1]);
-    setupSignal(ui->gridLayoutLead2, widgetList[2]);
+    setupSignal(ui->verticalLayoutSignal, signalWidget);
 }
 
 void MainWindow::updateRecordList(const QString& recordDirectory)
@@ -259,16 +258,32 @@ void MainWindow::on_pushButtonData2_clicked()
 
 void MainWindow::on_pushButtonCompare_clicked()
 {
-    QString path = QFileDialog::getExistingDirectory(nullptr, "Select Comapre Result irectory", QDir::homePath());
-    if(DirectoryValidator::validateDirectory(path))
-    {
-        AnalyseCfg analyseCfg;
-        analyseCfg.csvPath1 = m_CSV1FilesWithPath;
-        analyseCfg.csvPath2 = m_CSV2FilesWithPath;
-        analyseCfg.outputPath = path;
-        Q_EMIT sigAnalyseRequested(analyseCfg);
+    if (m_CSV1FilePath.isEmpty() || m_CSV2FilePath.isEmpty()) {
+        QMessageBox::warning(this,
+                             QStringLiteral("Compare"),
+                             QStringLiteral("Select CSV directories for Data 1 and Data 2 first."));
+        return;
     }
-    else
-        QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
+
+    if (m_CSV1FilePath.size() != m_CSV2FilePath.size()) {
+        QMessageBox::warning(this,
+                             QStringLiteral("Compare"),
+                             QStringLiteral("Data 1 and Data 2 must contain the same number of CSV files."));
+        return;
+    }
+
+    const QString path = QFileDialog::getExistingDirectory(this,
+                                                           QStringLiteral("Select Compare Result Directory"),
+                                                           QDir::homePath());
+    if (!DirectoryValidator::validateDirectory(path)) {
+        QMessageBox::critical(this, QStringLiteral("Dir Validation"), QStringLiteral("Dir is invalid"));
+        return;
+    }
+
+    AnalyseCfg analyseCfg;
+    analyseCfg.csvPath1 = m_CSV1FilePath;
+    analyseCfg.csvPath2 = m_CSV2FilePath;
+    analyseCfg.outputPath = path;
+    Q_EMIT sigAnalyseRequested(analyseCfg);
 }
 

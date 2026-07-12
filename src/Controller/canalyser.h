@@ -8,10 +8,9 @@ class CAnalyser : public QObject
     Q_OBJECT
 public:
     explicit CAnalyser(QObject *parent = nullptr, AnalyseCfg cfg = AnalyseCfg());
-    void analyse();
+    bool analyse();
 
 private:
-    SheetAnalyser *m_sheetAnalyser = nullptr;
     AnalyseCfg m_analyseCfg;
 signals:
 };

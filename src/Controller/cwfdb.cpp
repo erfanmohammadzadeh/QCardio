@@ -25,7 +25,6 @@ void Cwfdb::clearVec()
     m_strData.clear();
 }
 
-
 bool Cwfdb::readData(const SignalViewParameters &params)
 {
     clearVec();
@@ -125,12 +124,13 @@ bool Cwfdb::readAnot(const SignalViewParameters &params)
             maxRR = qMax(maxRR, rr.intervalSeconds);
         }
         meanRR /= m_strData.rrIntervals.size();
-
+#if DEBUG_CWFDB
         qDebug() << "\nRR Interval Statistics:";
         qDebug() << QString("  Mean: %1 ms").arg(meanRR * 1000, 0, 'f', 2);
         qDebug() << QString("  Min: %1 ms").arg(minRR * 1000, 0, 'f', 2);
         qDebug() << QString("  Max: %1 ms").arg(maxRR * 1000, 0, 'f', 2);
         qDebug() << QString("  HR: %1 bpm").arg(60.0 / meanRR, 0, 'f', 1);
+#endif
     }
     return true;
 }

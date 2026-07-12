@@ -11,6 +11,7 @@ public:
     explicit CSV(QObject *parent = nullptr, QString filename = "", CSVFormat csvData=CSVFormat());
 
     CSVFormat csvFormat() const;
+    bool loadFromFile(const QString &path);
     void loadRequested();
     void saveCSV();
     void comparesFile(const CSVFormat& csv1, const CSVFormat& csv2);

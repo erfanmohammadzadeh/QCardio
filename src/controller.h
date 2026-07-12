@@ -15,6 +15,7 @@ class Controller : public QObject
     Q_OBJECT
 public:
     explicit Controller(QObject *parent = nullptr);
+    ~Controller();
     MainWindow m_mainWindow;
     Cwfdb *m_cwfdb = nullptr;
     CSignalView* m_csignalView = nullptr;

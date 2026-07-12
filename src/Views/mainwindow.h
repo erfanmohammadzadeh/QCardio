@@ -24,7 +24,7 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-    void setSignalWidget(const QList<SignalViewWidget *> widgetList);
+    void setSignalWidget(SignalViewWidget *signalWidget);
     void updateRecordList(const QString &recordDirectory);
     void loadStyle();
     void enableUIBtn(const bool &isEnable);
@@ -55,7 +55,7 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
-    void setupSignal(QGridLayout* mainLayout, SignalViewWidget* signalWidget);
+    void setupSignal(QVBoxLayout *mainLayout, SignalViewWidget *signalWidget);
     void saveSetting();
     ExprotSetting::ExportMethod getExportMethod();
     SignalViewParameters readSignalSetting();

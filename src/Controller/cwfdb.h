@@ -9,6 +9,7 @@
 #include <Models/global_qcardio.h>
 #include <Models/annotationreader.h>
 
+#define DEBUG_CWFDB false
 class Cwfdb : public QObject
 {
     Q_OBJECT

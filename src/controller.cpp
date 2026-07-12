@@ -30,13 +30,18 @@ Controller::Controller(QObject *parent)
     connect(&m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
 
     m_cwfdb = new Cwfdb(this);
-    m_csignalView = new CSignalView(this);
+    m_csignalView = new CSignalView();
     m_cexporter = new CExporter(this);
 
-    m_mainWindow.setSignalWidget(m_csignalView->windgetList());
+    m_mainWindow.setSignalWidget(m_csignalView->signalWidget());
     m_csetting.loadSetting(m_uiConfig);
     m_mainWindow.loadUIConfig(m_uiConfig);
     m_mainWindow.setSetting(&m_csetting);
+}
+
+Controller::~Controller()
+{
+    m_csignalView->deleteLater();
 }
 
 void Controller::sltOpenRecord(const SignalViewParameters& params)
@@ -137,6 +142,23 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
 
 void Controller::sltAnalyseRequested(const AnalyseCfg& analyseCfg)
 {
-    CAnalyser analyse(nullptr, analyseCfg);
-    analyse.analyse();
+    QtConcurrent::run(QThreadPool::globalInstance(), [=]() {
+        CAnalyser analyser(nullptr, analyseCfg);
+        const bool success = analyser.analyse();
+
+        QMetaObject::invokeMethod(
+            &m_mainWindow,
+            [success]() {
+                if (success) {
+                    QMessageBox::information(nullptr,
+                                             QStringLiteral("Compare"),
+                                             QStringLiteral("Compare process completed"));
+                } else {
+                    QMessageBox::warning(nullptr,
+                                        QStringLiteral("Compare"),
+                                        QStringLiteral("Compare failed. Check CSV paths and file contents."));
+                }
+            },
+            Qt::QueuedConnection);
+    });
 }

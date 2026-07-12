@@ -56,16 +56,19 @@
       </item>
       <item row="0" column="0">
        <widget class="QWidget" name="widgetSignal" native="true">
-        <layout class="QGridLayout" name="gridLayout_16">
-         <item row="1" column="0">
-          <layout class="QGridLayout" name="gridLayoutLead2"/>
-         </item>
-         <item row="0" column="0">
-          <layout class="QGridLayout" name="gridLayoutLead1"/>
-         </item>
-         <item row="2" column="0">
-          <layout class="QGridLayout" name="gridLayoutLead3"/>
-         </item>
+        <layout class="QVBoxLayout" name="verticalLayoutSignal">
+         <property name="leftMargin">
+          <number>0</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
         </layout>
        </widget>
       </item>

@@ -4,84 +4,75 @@
 #include <QWidget>
 #include <QPainter>
 #include <QVector>
-#include <QTimer>
-#include <QResizeEvent>
 #include <QColor>
-#include <QFont>
-#include <cmath>
+#include <QStringList>
+#define DEBUG_SIGNALVIEW false
 
 class SignalViewWidget : public QWidget
 {
     Q_OBJECT
 
 public:
+    static constexpr int MaxLeads = 3;
+
     explicit SignalViewWidget(QWidget *parent = nullptr);
-    ~SignalViewWidget();
 
-    // Configuration methods
-    void setSignalColor(const QColor &color);
-    void setGridColor(const QColor &color);
-    void setBackgroundColor(const QColor &color);
-    void setSignalName(const QString &name);
-    void setTimeWindow(qreal seconds);
-    void setAmplitudeRange(qreal min, qreal max);
-    void setSampleRate(int samplesPerSecond);
-    void setShowGrid(bool show);
-    void setShowLabels(bool show);
-    void setLineWidth(int width);
+    void setLeads(const QVector<QVector<qreal>> &leads,
+                  const QStringList &names,
+                  int sampleRate,
+                  qreal adcPerMillivolt = 200.0);
+    void clearLeads();
 
-    // Data methods
-    void addDataPoint(qreal value);
-    void addDataPoints(const QVector<qreal> &values);
-    void clearData();
-    void setData(const QVector<qreal> &data);
-
-    // ECG specific
-    void setECGMode(bool enabled);
-    void setHeartRate(int bpm);
+    void setPaperSpeed(qreal mmPerSecond);
+    void setSensitivity(qreal mmPerMillivolt);
+    void setVisibleDuration(qreal seconds);
 
 protected:
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
     void wheelEvent(QWheelEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
 
 private:
-    // Data buffer
-    QVector<qreal> m_data;
-    int m_maxDataPoints;
+    int activeLeadCount() const;
+    qreal totalDurationSec() const;
+    qreal maxTimeOffset() const;
+    QRectF plotRect() const;
+    QRectF leadStripRect(int leadIndex) const;
 
-    // Configuration
-    QColor m_signalColor;
-    QColor m_gridColor;
-    QColor m_backgroundColor;
-    QString m_signalName;
+    qreal sampleToMillivolts(qreal sample) const;
+    qreal sampleIndexToTime(int index) const;
+    qreal timeToX(qreal timeSec, const QRectF &plotArea) const;
+    qreal millivoltsToY(qreal millivolts, qreal stripCenterY, double signalDC = 0) const;
 
-    qreal m_timeWindow;        // Seconds to display
-    qreal m_amplitudeMin;
-    qreal m_amplitudeMax;
-    int m_sampleRate;          // Samples per second
-    bool m_showGrid;
-    bool m_showLabels;
-    int m_lineWidth;
-    bool m_ecgMode;
-    int m_heartRate;
-    int m_visibleTimeWindow = 20;
+    void drawGrid(QPainter &painter, const QRectF &plotArea);
+    void drawLead(QPainter &painter, int leadIndex, const QRectF &stripRect);
+    void drawLeadLabel(QPainter &painter, int leadIndex, const QRectF &stripRect);
+    void drawScaleLegend(QPainter &painter, const QRectF &plotArea);
+    void autoScaleAndCenter();
+    void updateVisibleDuration();
+    qreal pixelsPerSecond() const;
 
-    // View control
-    qreal m_timeOffset;        // For scrolling/panning
-    qreal m_zoomLevel;
+
+    QVector<QVector<qreal>> m_leads;
+    QStringList m_leadNames;
+    int m_sampleRate = 360;
+    qreal m_adcPerMv = 200.0;
+
+    qreal m_paperSpeedMmPerSec = 25.0;
+    qreal m_sensitivityMmPerMv = 10.0;
+    qreal m_pixelsPerMm = 3.5;
+    qreal m_stripHeightMm = 80.0;
+
+    qreal m_timeOffsetSec = 0.0;
+    qreal m_visibleDurationSec = 5.0;
+
+    bool m_isPanning = false;
     QPoint m_lastMousePos;
-    bool m_isPanning;
 
-    // Helper methods
-    void updateMaxDataPoints();
-    QPointF dataToPixel(qreal time, qreal value) const;
-    QPair<qreal, qreal> pixelToData(const QPoint &pixel) const;
-    void drawGrid(QPainter &painter);
-    void drawSignal(QPainter &painter);
-    void drawLabels(QPainter &painter);
+    static const QColor s_leadColors[MaxLeads];
 };
 
 #endif // SIGNALVIEWWIDGET_H
