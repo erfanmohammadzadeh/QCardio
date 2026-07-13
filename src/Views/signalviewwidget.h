@@ -51,7 +51,6 @@ private:
     void drawLead(QPainter &painter, int leadIndex, const QRectF &stripRect);
     void drawLeadLabel(QPainter &painter, int leadIndex, const QRectF &stripRect);
     void drawScaleLegend(QPainter &painter, const QRectF &plotArea);
-    void autoScaleAndCenter();
     void updateVisibleDuration();
     qreal pixelsPerSecond() const;
 

@@ -72,24 +72,24 @@ void CSV::saveSignal()
 
     // Find minimum time for shifting
     long minTime = 0;
-    for (const auto& ann : std::as_const(m_csvFormat.sampleIndex)) {
-        if (ann < minTime) minTime = ann;
-    }
+    // for (const auto& ann : std::as_const(m_csvFormat.sampleIndex)) {
+    //     if (ann < minTime) minTime = ann;
+    // }
 
     int numAnnotations = m_csvFormat.sampleIndex.size();
 
-    for (int i = numAnnotations-1; i >= 0; i--)
+    for (int i = 0; i < numAnnotations; ++i)
     {
         long sampleIndex = (m_csvFormat.sampleIndex.at(i) - minTime);
-        qDebug() << sampleIndex;
-        out << sampleIndex/178 << ","
+        // qDebug() << "sav "<< sampleIndex;
+        out << sampleIndex << ","
             << m_csvFormat.type.at(i) << "\n";
     }
 
     file.close();
 }
 
-void CSV::saveRawCSV()
+void CSV::saveRawCSV(const CSVFormat &csv1, const CSVFormat &csv2)
 {
     QFile file(m_filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -99,7 +99,7 @@ void CSV::saveRawCSV()
     int numAnnotations = m_csvFormat.sampleIndex.size();
 
     int qrsMachCount = 0;
-    for (int i = 0; i < numAnnotations-1; ++i)
+    for (int i = 0; i < numAnnotations; ++i)
     {
         long sampleIndex = m_csvFormat.sampleIndex.at(i);
         bool isMach = false;
@@ -108,7 +108,9 @@ void CSV::saveRawCSV()
             qrsMachCount++;
             isMach = true;
         }
-        out << sampleIndex << ","
+        out << csv1.sampleIndex.at(i) << ","
+            << csv2.sampleIndex.at(i) << ","
+            << sampleIndex << ","
             << m_csvFormat.type.at(i) << ","
             << (isMach ? "QRS mach" : "QRS not mach") << "\n";
     }
@@ -133,5 +135,5 @@ void CSV::comparesFile(const CSVFormat &csv1, const CSVFormat &csv2)
         m_csvFormat.sampleIndex << qAbs(csv1.sampleIndex.at(i) - csv2.sampleIndex.at(i));
         m_csvFormat.type << static_cast<quint8>(csv1.type.at(i) == csv2.type.at(i) ? 1 : 0);
     }
-    saveRawCSV();
+    saveRawCSV(csv1,csv2);
 }

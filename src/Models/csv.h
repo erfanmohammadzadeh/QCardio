@@ -14,7 +14,7 @@ public:
     bool loadFromFile(const QString &path);
     void loadRequested();
     void saveSignal();
-    void saveRawCSV();
+    void saveRawCSV(const CSVFormat &csv1, const CSVFormat &csv2);
     void comparesFile(const CSVFormat& csv1, const CSVFormat& csv2);
     QString getFilename() const;
 

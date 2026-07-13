@@ -56,9 +56,6 @@ void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
     m_sampleRate = qMax(1, sampleRate);
     m_adcPerMv = qMax<qreal>(1.0, adcPerMillivolt);
     m_timeOffsetSec = 0.0;
-
-    // autoScaleAndCenter();
-
     update();
 }
 
@@ -68,48 +65,6 @@ void SignalViewWidget::clearLeads()
     m_leadNames.clear();
     m_timeOffsetSec = 0.0;
     update();
-}
-
-void SignalViewWidget::autoScaleAndCenter()
-{
-    if (m_leads.isEmpty()) return;
-
-    // Find global min and max across all leads
-    qreal globalMin = 0, globalMax = 0;
-    bool first = true;
-
-    for (const auto &lead : m_leads) {
-        if (lead.isEmpty()) continue;
-        qreal minVal = *std::min_element(lead.begin(), lead.end());
-        qreal maxVal = *std::max_element(lead.begin(), lead.end());
-        if (first) {
-            globalMin = minVal;
-            globalMax = maxVal;
-            first = false;
-        } else {
-            globalMin = qMin(globalMin, minVal);
-            globalMax = qMax(globalMax, maxVal);
-        }
-    }
-
-    if (first) return;
-
-    // Calculate amplitude in mV
-    qreal amplitudeMv = sampleToMillivolts(globalMax - globalMin);
-    qreal meanMv = sampleToMillivolts((globalMax + globalMin) / 2);
-
-    qDebug() << "Auto-scale: amplitude =" << amplitudeMv << "mV, mean =" << meanMv << "mV";
-
-    // Adjust sensitivity to fit in strip (with 20% margin)
-    const qreal stripHeightPx = m_stripHeightMm * m_pixelsPerMm;
-    const qreal targetHeightPx = stripHeightPx * 0.8; // 80% of strip height
-
-    if (amplitudeMv > 0) {
-        qreal newSensitivity = targetHeightPx / (amplitudeMv * m_pixelsPerMm);
-        newSensitivity = qBound(1.0, newSensitivity, 20.0);
-        m_sensitivityMmPerMv = newSensitivity;
-        qDebug() << "Adjusted sensitivity to:" << m_sensitivityMmPerMv << "mm/mV";
-    }
 }
 
 void SignalViewWidget::setPaperSpeed(qreal mmPerSecond)
@@ -191,12 +146,6 @@ qreal SignalViewWidget::timeToX(qreal timeSec, const QRectF &plotArea) const
     const qreal relativeTime = timeSec - m_timeOffsetSec;
     return plotArea.left() + relativeTime * pixelsPerSecond();
 }
-
-// qreal SignalViewWidget::timeToX(qreal timeSec, const QRectF &plotArea) const
-// {
-//     const qreal relativeTime = timeSec - m_timeOffsetSec;
-//     return plotArea.left() + (relativeTime / m_visibleDurationSec) * plotArea.width();
-// }
 
 qreal SignalViewWidget::millivoltsToY(qreal millivolts, qreal stripCenterY, double signalDC) const
 {

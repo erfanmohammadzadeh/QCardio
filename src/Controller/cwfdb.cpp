@@ -108,10 +108,8 @@ bool Cwfdb::readAnot(const SignalViewParameters &params)
         return false;
     }
 
-    double newFreq = params.targetFs;
-    reader.applyResampling(newFreq);
-    m_strData.anotList = reader.getResampledAnnotations();
-    m_strData.rrIntervals = reader.computeRRIntervals(m_strData.anotList, static_cast<int>(newFreq));
+    m_strData.anotList = reader.getAnnotations();
+    m_strData.rrIntervals = reader.computeRRIntervals(m_strData.anotList, params.targetFs);
 
     if (!m_strData.rrIntervals.isEmpty()) {
         double meanRR = 0.0;

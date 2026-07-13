@@ -79,12 +79,12 @@ struct MIT_BIH_ECGData
         CSVFormat converted;
         for(const AnnotationData& anot : this->anotList)
         {
+            // qDebug() << "insave: " << anot.time;
             converted.sampleIndex << anot.time;
             converted.type << anot.anntyp;
         }
         return converted;
     }
-
 };
 
 struct SignalViewParameters
