@@ -14,14 +14,14 @@ public:
     bool loadFromFile(const QString &path);
     void loadRequested();
     void saveSignal();
-    void saveRawCSV(const CSVFormat &csv1, const CSVFormat &csv2);
-    void comparesFile(const CSVFormat& csv1, const CSVFormat& csv2);
+    void saveRawCSVRes(const SheetResult& res);
     QString getFilename() const;
 
 private:
     QString m_filename;
     CSVFormat m_csvFormat;
     void loadData(const QString& path);
+
 
 signals:
     void sigReadyForRead();

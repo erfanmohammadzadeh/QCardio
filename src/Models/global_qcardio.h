@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QMessageBox>
 #include <QFile>
+#include <algorithm>
 #define LEAD_COUNT 3
 
 enum DirectoryValidationFlags {
@@ -113,10 +114,42 @@ struct ExprotSetting
     bool exportCSV = true;
 };
 
-struct CSVResult
+struct SheetResult
 {
-    QVector<int> difSampleIndex;
-    QVector<bool> isTypeEqual;
+    QVector<int> sampleIndexList1;
+    QVector<int> alignedList1;
+    QVector<int> sampleIndexList2;
+    QVector<int> alignedList2;
+    QVector<int> difIndexList;
+
+    int getDif(int idx1, int idx2)
+    {
+        // Changed '>' to '>=' to fix the off-by-one crash
+        if (idx1 < 0 || idx1 >= this->sampleIndexList1.size() ||
+            idx2 < 0 || idx2 >= this->sampleIndexList2.size())
+        {
+            return -1;
+        }
+
+        return qAbs(this->sampleIndexList1.at(idx1) - this->sampleIndexList2.at(idx2));
+    }
+
+    int addInvalid(int idx, int csvFile)
+    {
+        if (csvFile == 1)
+        {
+            this->sampleIndexList1.insert(idx, -1);
+            return this->sampleIndexList1.size();
+        }
+        else if (csvFile == 2)
+        {
+            this->sampleIndexList2.insert(idx, -1);
+            return this->sampleIndexList2.size();
+        }
+
+        // Added fallback return to prevent undefined behavior
+        return -1;
+    }
 };
 
 struct AnalyseCfg

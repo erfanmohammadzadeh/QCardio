@@ -10,7 +10,6 @@ SheetAnalyser::SheetAnalyser(QObject *parent,
     , m_processTime(processTime)
 {
 }
-
 bool SheetAnalyser::processSheets()
 {
     if (m_sheetPathList.size() < 2) {
@@ -21,18 +20,69 @@ bool SheetAnalyser::processSheets()
     CSV csv1(nullptr, m_sheetPathList[0]);
     CSV csv2(nullptr, m_sheetPathList[1]);
 
-    if (!csv1.loadFromFile(m_sheetPathList[0])) {
-        qWarning() << "Failed to load CSV:" << m_sheetPathList[0];
+    if (!csv1.loadFromFile(m_sheetPathList[0]) || !csv2.loadFromFile(m_sheetPathList[1])) {
+        qWarning() << "Failed to load CSV files";
         return false;
     }
 
-    if (!csv2.loadFromFile(m_sheetPathList[1])) {
-        qWarning() << "Failed to load CSV:" << m_sheetPathList[1];
-        return false;
-    }
+    // FIX 1: Corrected target list assignment
+    m_sheetRes.sampleIndexList1 = csv1.csvFormat().sampleIndex;
+    m_sheetRes.sampleIndexList2 = csv2.csvFormat().sampleIndex;
+
+    runMachAndCheck();
 
     const QString outCsv = m_outputPath + QStringLiteral("/compare%1.csv").arg(m_processTime);
     CSV compareOut(nullptr, outCsv);
-    compareOut.comparesFile(csv1.csvFormat(), csv2.csvFormat());
+    compareOut.saveRawCSVRes(m_sheetRes);
     return true;
 }
+
+void SheetAnalyser::runMachAndCheck()
+{
+    const int csv1Size = m_sheetRes.sampleIndexList1.size();
+    const int csv2Size = m_sheetRes.sampleIndexList2.size();
+
+    // Handle edge case
+    if (csv1Size == 0 || csv2Size == 0) {
+        qDebug() << "Empty sample lists!";
+        return;
+    }
+
+    // Constants
+    const int MAX_DIFF_THRESHOLD = 300;  // Initial max threshold
+    const int VALID_DIFF_MAX = 100;      // Maximum valid difference
+    const int VALID_DIFF_MIN = 0;        // Minimum valid difference
+    const int INVALID_INDEX = -1;        // Sentinel for invalid alignment
+
+    for(int i = 0; i < csv1Size; i++)
+    {
+        int minDif = MAX_DIFF_THRESHOLD;
+        int bestMatchIndex = 0;          // Default to first element
+
+        for(int j = 0; j < csv2Size; j++)
+        {
+            int currentDif = m_sheetRes.getDif(i, j);
+            if(currentDif < minDif)      // Fixed: look for smaller value
+            {
+                minDif = currentDif;
+                bestMatchIndex = j;
+            }
+        }
+
+        // Check if the minimum difference is within valid range
+        if(minDif > VALID_DIFF_MIN && minDif < VALID_DIFF_MAX)
+        {
+            m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
+            m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
+            m_sheetRes.difIndexList.append(minDif);
+        }
+        else
+        {
+            // Use best match anyway, but mark as invalid
+            m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
+            m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
+            m_sheetRes.difIndexList.append(INVALID_INDEX);
+        }
+    }
+}
+

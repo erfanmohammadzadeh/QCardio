@@ -17,7 +17,9 @@ public:
 private:
     QStringList m_sheetPathList;
     QString m_outputPath;
+    SheetResult m_sheetRes;
     int m_processTime = 0;
+    void runMachAndCheck();
 };
 
 #endif // SHEETANALYSER_H

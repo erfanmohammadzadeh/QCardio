@@ -89,51 +89,32 @@ void CSV::saveSignal()
     file.close();
 }
 
-void CSV::saveRawCSV(const CSVFormat &csv1, const CSVFormat &csv2)
+void CSV::saveRawCSVRes(const SheetResult &res)
 {
     QFile file(m_filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
         return;
 
     QTextStream out(&file);
-    int numAnnotations = m_csvFormat.sampleIndex.size();
+    int numAnnotations = res.alignedList1.size(); // Use the final aligned size
+    qDebug() << "Total aligned rows: " << numAnnotations;
 
-    int qrsMachCount = 0;
-    for (int i = 0; i < numAnnotations; ++i)
+    for(int i = 0; i < numAnnotations; i++)
     {
-        long sampleIndex = m_csvFormat.sampleIndex.at(i);
-        bool isMach = false;
-        if(sampleIndex/178 < 3)
-        {
-            qrsMachCount++;
-            isMach = true;
-        }
-        out << csv1.sampleIndex.at(i) << ","
-            << csv2.sampleIndex.at(i) << ","
-            << sampleIndex << ","
-            << m_csvFormat.type.at(i) << ","
+        int diff = res.difIndexList.at(i);
+
+        // FIX 2 & 3: Match only if it's NOT a desync marker (-1) AND within tolerance limit
+        bool isMach = (diff != -1) && ((diff / 178) < 3);
+
+        out << res.alignedList1.at(i) << ","
+            << res.alignedList2.at(i) << ","
+            << diff << ","
             << (isMach ? "QRS mach" : "QRS not mach") << "\n";
     }
-
-    out << "Mach Count" << "," << qrsMachCount;
-
     file.close();
 }
 
 QString CSV::getFilename() const
 {
     return m_filename;
-}
-
-void CSV::comparesFile(const CSVFormat &csv1, const CSVFormat &csv2)
-{
-    m_csvFormat.sampleIndex.clear();
-    m_csvFormat.type.clear();
-
-    const int rowSize = qMin(csv1.sampleIndex.size(), csv2.sampleIndex.size());
-    for (int i = 0; i < rowSize; ++i) {
-        m_csvFormat.sampleIndex << qAbs(csv1.sampleIndex.at(i) - csv2.sampleIndex.at(i));
-        m_csvFormat.type << static_cast<quint8>(csv1.type.at(i) == csv2.type.at(i) ? 1 : 0);
-    }
-    saveRawCSV(csv1,csv2);
 }
