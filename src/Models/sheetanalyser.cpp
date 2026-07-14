@@ -39,7 +39,7 @@ bool SheetAnalyser::processSheets()
 
 void SheetAnalyser::runMachAndCheck()
 {
-    const int csv1Size = m_sheetRes.sampleIndexList1.size();
+    int csv1Size = m_sheetRes.sampleIndexList1.size();
     const int csv2Size = m_sheetRes.sampleIndexList2.size();
 
     // Handle edge case
@@ -50,39 +50,114 @@ void SheetAnalyser::runMachAndCheck()
 
     // Constants
     const int MAX_DIFF_THRESHOLD = 300;  // Initial max threshold
-    const int VALID_DIFF_MAX = 100;      // Maximum valid difference
-    const int VALID_DIFF_MIN = 0;        // Minimum valid difference
+    const int VALID_DIFF_MAX = 100;      // Maximum valid difference (exclusive)
+    const int VALID_DIFF_MIN = 0;        // Minimum valid difference (inclusive)
     const int INVALID_INDEX = -1;        // Sentinel for invalid alignment
+
+    int lastMatchIndex = -1;  // Track the last valid match index
 
     for(int i = 0; i < csv1Size; i++)
     {
         int minDif = MAX_DIFF_THRESHOLD;
-        int bestMatchIndex = 0;          // Default to first element
+        int bestMatchIndex = 0;
 
+        // Find best match in csv2 for current csv1 index
         for(int j = 0; j < csv2Size; j++)
         {
             int currentDif = m_sheetRes.getDif(i, j);
-            if(currentDif < minDif)      // Fixed: look for smaller value
+            if(currentDif < minDif)
             {
                 minDif = currentDif;
                 bestMatchIndex = j;
             }
         }
 
-        // Check if the minimum difference is within valid range
-        if(minDif > VALID_DIFF_MIN && minDif < VALID_DIFF_MAX)
+        // Check for gap in matching indices
+        if(lastMatchIndex != -1 && (bestMatchIndex - lastMatchIndex) > 1)
         {
+            // Gap detected - insert invalid entries for the gap
+            for(int gap = lastMatchIndex + 1; gap < bestMatchIndex; gap++)
+            {
+                m_sheetRes.alignedList1.append(INVALID_INDEX);
+                m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(gap));
+                m_sheetRes.difIndexList.append(INVALID_INDEX);
+            }
+        }
+
+        // Now handle the valid/invalid match
+        if(minDif >= VALID_DIFF_MIN && minDif < VALID_DIFF_MAX)
+        {
+            // Valid difference
             m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
             m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
             m_sheetRes.difIndexList.append(minDif);
+            lastMatchIndex = bestMatchIndex;
         }
         else
         {
-            // Use best match anyway, but mark as invalid
+            // Invalid difference - use best match anyway but mark as invalid
             m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
             m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
             m_sheetRes.difIndexList.append(INVALID_INDEX);
+            // Don't update lastMatchIndex for invalid matches to preserve gap detection
         }
     }
 }
+
+// void SheetAnalyser::runMachAndCheck()
+// {
+//     int csv1Size = m_sheetRes.sampleIndexList1.size();
+//     const int csv2Size = m_sheetRes.sampleIndexList2.size();
+
+//     // Handle edge case
+//     if (csv1Size == 0 || csv2Size == 0) {
+//         qDebug() << "Empty sample lists!";
+//         return;
+//     }
+
+//     // Constants
+//     const int MAX_DIFF_THRESHOLD = 300;  // Initial max threshold
+//     const int VALID_DIFF_MAX = 100;      // Maximum valid difference
+//     const int VALID_DIFF_MIN = 0;        // Minimum valid difference
+//     const int INVALID_INDEX = -1;        // Sentinel for invalid alignment
+
+//     for(int i = 0; i < csv1Size; i++)
+//     {
+//         int minDif = MAX_DIFF_THRESHOLD;
+//         int bestMatchIndex = 0;          // Default to first element
+//         int lastMatchIndex = 0;
+
+//         for(int j = 0; j < csv2Size; j++)
+//         {
+//             int currentDif = m_sheetRes.getDif(i, j);
+//             if(currentDif < minDif)      // Fixed: look for smaller value
+//             {
+//                 minDif = currentDif;
+//                 bestMatchIndex = j;
+//             }
+//         }
+
+//         // Check if the minimum difference is within valid range
+//         if((bestMatchIndex - lastMatchIndex) > 1)
+//         {
+//             m_sheetRes.alignedList1.append(INVALID_INDEX);
+//             m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(lastMatchIndex+1));
+//             m_sheetRes.difIndexList.append(INVALID_INDEX);
+//             lastMatchIndex++;
+//         }
+//         else if(minDif > VALID_DIFF_MIN && minDif < VALID_DIFF_MAX)
+//         {
+//             m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
+//             m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
+//             m_sheetRes.difIndexList.append(minDif);
+//         }
+//         else
+//         {
+//             // Use best match anyway, but mark as invalid
+//             m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
+//             m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
+//             m_sheetRes.difIndexList.append(INVALID_INDEX);
+//         }
+//     }
+// }
 

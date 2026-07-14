@@ -6,45 +6,6 @@ AnnotationReader::AnnotationReader(const QString &dbPath, const QString &recordN
     setwfdb(const_cast<char*>(dbPath.toStdString().c_str()));
 }
 
-// bool AnnotationReader::loadAnnotations() {
-//     qDebug() << "Record:" << m_recordName;
-//     m_annotatorName = "atr";
-
-//     QByteArray recordBA = m_recordName.toLatin1();
-//     QByteArray annotatorBA = m_annotatorName.toLatin1();
-
-//     WFDB_Anninfo annInfo;
-//     annInfo.name = (char*)annotatorBA.constData();
-//     annInfo.stat = WFDB_READ;//for aha this should change to AHA
-
-//     if (annopen((char*)recordBA.constData(), &annInfo, 1) < 0) {
-//         qCritical() << "Failed to open XWS annotations for" << m_recordName;
-//         return false;
-//     }
-
-//     m_annotations.clear();
-//     WFDB_Annotation annot;
-
-//     while (getann(0, &annot) >= 0) {
-//         AnnotationData data;
-//         data.time = annot.time;
-//         qDebug() << "drs "<< annot.time;
-//         data.timeResampled = annot.time;
-//         data.anntyp = annot.anntyp;
-//         data.symbol = QString::fromLatin1(annstr(annot.anntyp));
-//         data.description = QString::fromLatin1(anndesc(annot.anntyp));
-//         data.subtype = annot.subtyp;
-//         data.channel = annot.chan;
-//         data.number = annot.num;  // In XWS, 'num' often indicates wave type
-//         data.aux = (annot.aux != NULL) ? QString::fromLatin1(annot.aux) : "";
-//         m_annotations.append(data);
-//     }
-
-//     wfdbquit();
-//     m_originalFrequency = //sampfreq(annInfo.name);
-//     return true;
-// }
-
 bool AnnotationReader::loadAnnotations() {
     qDebug() << "Record:" << m_recordName;
     m_annotatorName = "atr";
