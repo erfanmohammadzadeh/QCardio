@@ -89,11 +89,11 @@ void CSV::saveSignal()
     file.close();
 }
 
-void CSV::saveRawCSVRes(const SheetResult &res)
+bool CSV::saveRawCSVRes(const SheetResult &res)
 {
     QFile file(m_filename);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
-        return;
+        return false;
 
     QTextStream out(&file);
     int numAnnotations = res.alignedList1.size(); // Use the final aligned size
@@ -115,8 +115,38 @@ void CSV::saveRawCSVRes(const SheetResult &res)
             << (res.difTypeList.at(i) ? "Type Macth" : "Type Not Macth")        << "\n";
     }
     file.close();
+    return true;
 }
 
+bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
+{
+    QFile file(m_filename);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out(&file);
+    out << "FileName,totalQRS,matchedQRS,pvcMatched,normalMatched,matchedType\n";
+
+    for (const FileProcessResult &res : fileProcessRes)
+    {
+        out << res.fileName << ","
+            << res.totalQRS << ","
+            << res.matchedQRS << ","
+            << res.pvcMatched << ","
+            << res.normalMatched << ","
+            << res.matchedType << "\n";
+
+        // Check for write errors
+        if (out.status() != QTextStream::Ok)
+        {
+            file.close();
+            return false;
+        }
+    }
+
+    file.close();
+    return true;
+}
 QString CSV::getFilename() const
 {
     return m_filename;

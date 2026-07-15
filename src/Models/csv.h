@@ -14,7 +14,8 @@ public:
     bool loadFromFile(const QString &path);
     void loadRequested();
     void saveSignal();
-    void saveRawCSVRes(const SheetResult& res);
+    bool saveRawCSVRes(const SheetResult& res);
+    bool saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes);
     QString getFilename() const;
 
 private:

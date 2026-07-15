@@ -166,4 +166,24 @@ struct AnalyseCfg
     QStringList csvPath2;
     QString outputPath;
 };
+
+struct FileProcessResult
+{
+    QString fileName;
+    int totalQRS = 0;
+    int matchedQRS = 0;
+    int matchedType = 0;
+    int normalMatched = 0;
+    int pvcMatched = 0;
+
+    void clear()
+    {
+        totalQRS = 0;
+        matchedQRS = 0;
+        matchedType = 0;
+        normalMatched = 0;
+        pvcMatched = 0;
+    }
+};
+
 #endif // GLOBAL_QCARDIO_H

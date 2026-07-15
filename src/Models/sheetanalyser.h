@@ -14,12 +14,17 @@ public:
                            QString processFileName = 0);
     bool processSheets();
 
+    FileProcessResult fileProcessRes() const;
+
 private:
     QStringList m_sheetPathList;
     QString m_outputPath;
     SheetResult m_sheetRes;
     QString m_processFileName = 0;
-    void runMachAndCheck();
+    FileProcessResult m_fileProcessRes;
+    bool CompareSampleIdxAndType();
+    bool saveResult();
+    bool loadCSVData();
 };
 
 #endif // SHEETANALYSER_H

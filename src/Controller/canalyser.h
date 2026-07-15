@@ -12,6 +12,7 @@ public:
 
 private:
     AnalyseCfg m_analyseCfg;
+    bool saveProcessFileResult(const QVector<FileProcessResult>& fileProcessRes);
 signals:
 };
 
