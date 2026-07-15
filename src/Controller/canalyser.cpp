@@ -20,8 +20,10 @@ bool CAnalyser::analyse()
     for (int i = 0; i < processFile; ++i) {
         QStringList pairFile;
         pairFile << m_analyseCfg.csvPath1[i] << m_analyseCfg.csvPath2[i];
-
-        SheetAnalyser analyser(nullptr, pairFile, m_analyseCfg.outputPath, i);
+        QString base1 = QFileInfo(m_analyseCfg.csvPath1[i]).baseName();
+        QString base2 = QFileInfo(m_analyseCfg.csvPath2[i]).baseName();
+        QString filename = base1 + "Vs" + base2;
+        SheetAnalyser analyser(nullptr, pairFile, m_analyseCfg.outputPath, filename);
         allSucceeded = analyser.processSheets() && allSucceeded;
     }
 

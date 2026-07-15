@@ -3,11 +3,11 @@
 SheetAnalyser::SheetAnalyser(QObject *parent,
                              QStringList sheetPathList,
                              QString outputPath,
-                             int processTime)
+                             QString processFileName)
     : QObject(parent)
     , m_sheetPathList(std::move(sheetPathList))
     , m_outputPath(std::move(outputPath))
-    , m_processTime(processTime)
+    , m_processFileName(processFileName)
 {
 }
 bool SheetAnalyser::processSheets()
@@ -27,11 +27,13 @@ bool SheetAnalyser::processSheets()
 
     // FIX 1: Corrected target list assignment
     m_sheetRes.sampleIndexList1 = csv1.csvFormat().sampleIndex;
+    m_sheetRes.typeList1 = csv1.csvFormat().type;
     m_sheetRes.sampleIndexList2 = csv2.csvFormat().sampleIndex;
+    m_sheetRes.typeList2 = csv2.csvFormat().type;
 
     runMachAndCheck();
 
-    const QString outCsv = m_outputPath + QStringLiteral("/compare%1.csv").arg(m_processTime);
+    const QString outCsv = m_outputPath + QStringLiteral("/%1.csv").arg(m_processFileName);
     CSV compareOut(nullptr, outCsv);
     compareOut.saveRawCSVRes(m_sheetRes);
     return true;
@@ -81,6 +83,9 @@ void SheetAnalyser::runMachAndCheck()
                 m_sheetRes.alignedList1.append(INVALID_INDEX);
                 m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(gap));
                 m_sheetRes.difIndexList.append(INVALID_INDEX);
+                m_sheetRes.typeAlignList1.append(INVALID_INDEX);
+                m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(gap));
+                m_sheetRes.difTypeList.append(false);
             }
         }
 
@@ -101,6 +106,10 @@ void SheetAnalyser::runMachAndCheck()
             m_sheetRes.difIndexList.append(INVALID_INDEX);
             // Don't update lastMatchIndex for invalid matches to preserve gap detection
         }
+
+        m_sheetRes.typeAlignList1.append(m_sheetRes.typeList1.at(i));
+        m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(bestMatchIndex));
+        m_sheetRes.difTypeList.append(m_sheetRes.typeList1.at(i) == m_sheetRes.typeList2.at(bestMatchIndex));
     }
 }
 

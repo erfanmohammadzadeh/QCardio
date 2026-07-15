@@ -11,14 +11,14 @@ public:
     explicit SheetAnalyser(QObject *parent = nullptr,
                            QStringList sheetPathList = {},
                            QString outputPath = "",
-                           int processTime = 0);
+                           QString processFileName = 0);
     bool processSheets();
 
 private:
     QStringList m_sheetPathList;
     QString m_outputPath;
     SheetResult m_sheetRes;
-    int m_processTime = 0;
+    QString m_processFileName = 0;
     void runMachAndCheck();
 };
 

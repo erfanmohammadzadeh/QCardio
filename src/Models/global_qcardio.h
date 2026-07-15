@@ -117,10 +117,18 @@ struct ExprotSetting
 struct SheetResult
 {
     QVector<int> sampleIndexList1;
+    QVector<quint8> typeList1;
     QVector<int> alignedList1;
+    QVector<quint8> typeAlignList1;
+
     QVector<int> sampleIndexList2;
+    QVector<quint8> typeList2;
     QVector<int> alignedList2;
+    QVector<quint8> typeAlignList2;
+
     QVector<int> difIndexList;
+    QVector<bool> difTypeList;
+
 
     int getDif(int idx1, int idx2)
     {

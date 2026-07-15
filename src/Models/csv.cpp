@@ -109,7 +109,10 @@ void CSV::saveRawCSVRes(const SheetResult &res)
         out << res.alignedList1.at(i) << ","
             << res.alignedList2.at(i) << ","
             << diff << ","
-            << (isMach ? "QRS mach" : "QRS not mach") << "\n";
+            << (isMach ? "QRS Macth" : "QRS not Macth") << ","
+            << res.typeAlignList1.at(i) << ","
+            << res.typeAlignList2.at(i) << ","
+            << (res.difTypeList.at(i) ? "Type Macth" : "Type Not Macth")        << "\n";
     }
     file.close();
 }
