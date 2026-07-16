@@ -10,18 +10,20 @@
 #include <QGuiApplication>
 #include "Controller/csettings.h"
 #include "Controller/canalyser.h"
+#include "Controller/clog.h"
 class Controller : public QObject
 {
     Q_OBJECT
 public:
     explicit Controller(QObject *parent = nullptr);
     ~Controller();
-    MainWindow m_mainWindow;
+    MainWindow *m_mainWindow = nullptr;
     Cwfdb *m_cwfdb = nullptr;
     CSignalView* m_csignalView = nullptr;
     CExporter* m_cexporter = nullptr;
     UIConfigs m_uiConfig;
     CSettings m_csetting;
+    CLog *m_clog;
 
 signals:
     void sigReadDataProcessEnd();

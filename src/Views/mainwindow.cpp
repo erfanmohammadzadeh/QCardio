@@ -11,7 +11,6 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    updateRecordList(ui->lineEditPath->text());
     ui->tabWidget->setCurrentIndex(0);
     loadStyle();
 }
@@ -27,7 +26,8 @@ void MainWindow::on_pushButtonSetPath_clicked()
                                                      "Select Database Path",
                                                      QDir::homePath());
     updateRecordList(path);
-    ui->lineEditPath->setText(path);
+    m_databasePath = path;
+    Q_EMIT sigAppendLog("Data base: " + path);
 }
 
 
@@ -35,7 +35,7 @@ void MainWindow::on_pushButtonRead_clicked()
 {
     enableUIBtn(false);
 
-    QString path = ui->lineEditPath->text();
+    QString path = m_databasePath;
     if(DirectoryValidator::validateDirectory(path))
     {
         SignalViewParameters params = readSignalSetting();
@@ -68,7 +68,7 @@ ExprotSetting::ExportMethod MainWindow::getExportMethod()
 SignalViewParameters MainWindow::readSignalSetting()
 {
     SignalViewParameters params;
-    params.dbPath = ui->lineEditPath->text();
+    params.dbPath = m_databasePath;
     params.signalFilePath = m_heaFilesWithPath.at(m_listItemIdx);
     params.targetFs = ui->spinBoxTargetFreq->value();
     params.gain = ui->doubleSpinBoxGain->value();
@@ -111,6 +111,11 @@ void MainWindow::closeEvent(QCloseEvent *event)
     event->accept();
 }
 
+QTextEdit* MainWindow::getLogFiledWidget()
+{
+    return ui->textEditLogs;
+}
+
 void MainWindow::setSignalWidget(SignalViewWidget *signalWidget)
 {
     setupSignal(ui->verticalLayoutSignal, signalWidget);
@@ -136,12 +141,15 @@ void MainWindow::enableUIBtn(const bool& isEnable)
 {
     ui->pushButtonExport->setEnabled(isEnable);
     ui->pushButtonRead->setEnabled(isEnable);
-    ui->pushButtonUpdate->setEnabled(isEnable);
 }
 
 void MainWindow::loadUIConfig(const UIConfigs &uiConfig)
 {
-    ui->lineEditPath->setText(uiConfig.dataBasePath());
+    //Config Database Path
+    m_databasePath =  uiConfig.dataBasePath();
+    Q_EMIT sigAppendLog("Database Path: " + m_databasePath);
+    updateRecordList(m_databasePath);
+
     ui->comboBoxDatabaseName->setCurrentText(uiConfig.dataBaseName());
     ui->comboBoxSignal1->setCurrentIndex(uiConfig.lineEditSignal1Index());
     ui->comboBoxSignal2->setCurrentIndex(uiConfig.lineEditSignal2Index());
@@ -155,7 +163,7 @@ void MainWindow::loadUIConfig(const UIConfigs &uiConfig)
 
 void MainWindow::getUIConfig(UIConfigs &uiConfig)
 {
-    uiConfig.setDataBasePath(ui->lineEditPath->text());
+    uiConfig.setDataBasePath(m_databasePath);
     uiConfig.setDataBaseName(ui->comboBoxDatabaseName->currentText());
     uiConfig.setLineEditSignal1Index(ui->comboBoxSignal1->currentIndex());
     uiConfig.setLineEditSignal2Index(ui->comboBoxSignal2->currentIndex());
@@ -233,7 +241,7 @@ void MainWindow::on_pushButtonData1_clicked()
     QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 1 Directory", QDir::homePath());
     if(DirectoryValidator::validateDirectory(path))
     {
-        ui->lineEditPathData1->setText(path);
+        Q_EMIT sigAppendLog("Selected Path 1"+path);
         addFileToListWidget(ui->listWidgetDir1,
                             m_CSV1FilePath,
                             m_CSV1FilesWithPath, "csv", path);
@@ -249,7 +257,7 @@ void MainWindow::on_pushButtonData2_clicked()
     QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 2 Directory", QDir::homePath());
     if(DirectoryValidator::validateDirectory(path))
     {
-        ui->lineEditPathData2->setText(path);
+        Q_EMIT sigAppendLog("selected Path 2"+path);
         addFileToListWidget(ui->listWidgetDir2,m_CSV2FilePath,m_CSV2FilesWithPath, "csv", path);
     }
     else

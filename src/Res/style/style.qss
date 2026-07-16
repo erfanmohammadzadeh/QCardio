@@ -369,35 +369,50 @@ QProgressBar[critical="true"]::chunk {
 }
 
 /* ---------- TAB WIDGET ---------- */
+/* Make tabs vertical on the left */
+/* Make tabs vertical on the left */
+QTabWidget {
+    /* This makes tabs appear on the left side */
+    tab-position: west;
+}
+
 QTabWidget::pane {
     background-color: #1a2028;
     border: 1px solid #2e3640;
     border-radius: 8px;
     padding: 8px;
+    /* Left border radius adjustment for vertical tabs */
+    border-top-left-radius: 0px;
+    border-bottom-left-radius: 0px;
 }
 
 QTabBar::tab {
     background-color: #252c36;
     color: #b0bcc8;
     border: 1px solid #2e3640;
-    border-bottom: none;
+    border-right: none;           /* No right border to connect with pane */
     border-top-left-radius: 6px;
-    border-top-right-radius: 6px;
-    padding: 8px 18px;
-    margin-right: 2px;
+    border-bottom-left-radius: 6px;
+    border-top-right-radius: 0px; /* No right rounding */
+    border-bottom-right-radius: 0px;
+    padding: 5px 8px;           /* More vertical padding, less horizontal */
+    margin-bottom: 2px;           /* Space between vertical tabs */
+    margin-right: -1px;           /* Overlap pane border */
+    min-height: 30px;             /* Minimum height for vertical tabs */
+    text-align: left;             /* Align text to left */
 }
 
 QTabBar::tab:selected {
     background-color: #1a6ea5;
     color: #ffffff;
     border-color: #3a7ea5;
+    border-right: none;
 }
 
 QTabBar::tab:hover:!selected {
     background-color: #2e3a48;
     color: #e0e8f0;
 }
-
 /* ---------- SCROLL BARS ---------- */
 QScrollBar:vertical {
     background-color: #1a2028;

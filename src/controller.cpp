@@ -5,44 +5,48 @@
 Controller::Controller(QObject *parent)
     : QObject{parent}
 {
-    m_mainWindow.show();
-    connect(&m_mainWindow, &MainWindow::sigReadDataRequested,
+    m_mainWindow = new MainWindow;
+    m_mainWindow->show();
+    connect(m_mainWindow, &MainWindow::sigReadDataRequested,
             this, &Controller::sltOpenRecord);
 
     connect(this, &Controller::sigReadAutomaticDataRequested,
             this, &Controller::sltOpenRecord);
 
-    connect(&m_mainWindow, &MainWindow::sigExportRequested,
+    connect(m_mainWindow, &MainWindow::sigExportRequested,
             this, &Controller::sltExportRequested);
 
-    connect(&m_mainWindow, &MainWindow::sigExportAllRequested,
+    connect(m_mainWindow, &MainWindow::sigExportAllRequested,
             this, &Controller::sltExportAllRequested);
 
     connect(this, &Controller::sigReadDataProcessEnd, this,[=]()
             {
                 m_csignalView->setData(m_cwfdb->getStructData());
-                m_mainWindow.enableUIBtn(true);
+                m_mainWindow->enableUIBtn(true);
             });
     connect(this, &Controller::sigExportProcessEnd, this,[=]()
             {
                 QMessageBox::information(nullptr, "Export", "Export Process Completed");
             });
-    connect(&m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
+    connect(m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
 
     m_cwfdb = new Cwfdb(this);
     m_csignalView = new CSignalView();
     m_cexporter = new CExporter(this);
+    m_clog = new CLog(this, m_mainWindow->getLogFiledWidget());
+    connect(m_mainWindow, &MainWindow::sigAppendLog, m_clog, &CLog::sltAppendLog);
 
-    connect(m_cexporter, &CExporter::sigExportProcessEnd, this,[=](){m_mainWindow.enableUIBtn(true);});
+    connect(m_cexporter, &CExporter::sigExportProcessEnd, this,[=](){m_mainWindow->enableUIBtn(true);});
 
-    m_mainWindow.setSignalWidget(m_csignalView->signalWidget());
+    m_mainWindow->setSignalWidget(m_csignalView->signalWidget());
     m_csetting.loadSetting(m_uiConfig);
-    m_mainWindow.loadUIConfig(m_uiConfig);
-    m_mainWindow.setSetting(&m_csetting);
+    m_mainWindow->loadUIConfig(m_uiConfig);
+    m_mainWindow->setSetting(&m_csetting);
 }
 
 Controller::~Controller()
 {
+    m_mainWindow->deleteLater();
     m_csignalView->deleteLater();
 }
 
@@ -66,7 +70,7 @@ void Controller::sltExportRequested(const ExprotSetting &exportSetting)
 
 void Controller::sltExportAllRequested(const ExprotSetting& setting)
 {
-    QProgressBar *progressBar = new QProgressBar(&m_mainWindow);
+    QProgressBar *progressBar = new QProgressBar(m_mainWindow);
     progressBar->setRange(0, setting.pathList.size());
     progressBar->setValue(0);
     progressBar->setVisible(true);
@@ -136,7 +140,7 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
                 progressBar->setVisible(false);
                 progressBar->deleteLater();
                 watcher->deleteLater();
-                m_mainWindow.enableUIBtn(true);
+                m_mainWindow->enableUIBtn(true);
             });
 
     watcher->setFuture(future);
@@ -149,7 +153,7 @@ void Controller::sltAnalyseRequested(const AnalyseCfg& analyseCfg)
         const bool success = analyser.analyse();
 
         QMetaObject::invokeMethod(
-            &m_mainWindow,
+            m_mainWindow,
             [success]() {
                 if (success) {
                     QMessageBox::information(nullptr,

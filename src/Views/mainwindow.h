@@ -11,6 +11,7 @@
 #include "Models/uiconfigs.h"
 #include "Controller/csettings.h"
 #include <QListWidget>
+#include <QTextEdit>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -33,6 +34,7 @@ public:
 
     void setSetting(CSettings *newSetting);
     void addFileToListWidget(QListWidget *windget, QStringList &filepath, QStringList& filename , const QString &type, const QString &path);
+    QTextEdit *getLogFiledWidget();
 
 private slots:
     void on_pushButtonSetPath_clicked();
@@ -70,14 +72,18 @@ private:
     QStringList m_CSV2FilePath;
 
     CSettings *m_setting;
+    quint8 m_counterLog = 0;
+    QString m_databasePath;
 
 Q_SIGNALS:
     void sigReadDataRequested(const SignalViewParameters& params);
     void sigExportRequested(const ExprotSetting& path);
     void sigExportAllRequested(const ExprotSetting &setting);
     void sigAnalyseRequested(const AnalyseCfg cfg);
+    void sigAppendLog(const QString& text);
 
 protected:
     void closeEvent(QCloseEvent*event) override;
+
 };
 #endif // MAINWINDOW_H

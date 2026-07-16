@@ -10,6 +10,7 @@ CONFIG += c++17
 SOURCES += \
     Controller/canalyser.cpp \
     Controller/cexporter.cpp \
+    Controller/clog.cpp \
     Controller/csettings.cpp \
     Controller/csignalview.cpp \
     Controller/cwfdb.cpp \
@@ -31,6 +32,7 @@ SOURCES += \
 HEADERS += \
     Controller/canalyser.h \
     Controller/cexporter.h \
+    Controller/clog.h \
     Controller/csettings.h \
     Controller/csignalview.h \
     Controller/cwfdb.h \
