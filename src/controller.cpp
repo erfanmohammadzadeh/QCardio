@@ -5,49 +5,45 @@
 Controller::Controller(QObject *parent)
     : QObject{parent}
 {
-    m_mainWindow = new MainWindow;
+    createObj();
+    initConnection();
+
     m_mainWindow->show();
-    connect(m_mainWindow, &MainWindow::sigReadDataRequested,
-            this, &Controller::sltOpenRecord);
-
-    connect(this, &Controller::sigReadAutomaticDataRequested,
-            this, &Controller::sltOpenRecord);
-
-    connect(m_mainWindow, &MainWindow::sigExportRequested,
-            this, &Controller::sltExportRequested);
-
-    connect(m_mainWindow, &MainWindow::sigExportAllRequested,
-            this, &Controller::sltExportAllRequested);
-
-    connect(this, &Controller::sigReadDataProcessEnd, this,[=]()
-            {
-                m_csignalView->setData(m_cwfdb->getStructData());
-                m_mainWindow->enableUIBtn(true);
-            });
-    connect(this, &Controller::sigExportProcessEnd, this,[=]()
-            {
-                QMessageBox::information(nullptr, "Export", "Export Process Completed");
-            });
-    connect(m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
-
-    m_cwfdb = new Cwfdb(this);
-    m_csignalView = new CSignalView();
-    m_cexporter = new CExporter(this);
-    m_clog = new CLog(this, m_mainWindow->getLogFiledWidget());
-    connect(m_mainWindow, &MainWindow::sigAppendLog, m_clog, &CLog::sltAppendLog);
-
-    connect(m_cexporter, &CExporter::sigExportProcessEnd, this,[=](){m_mainWindow->enableUIBtn(true);});
-
     m_mainWindow->setSignalWidget(m_csignalView->signalWidget());
-    m_csetting.loadSetting(m_uiConfig);
+    m_csetting->loadSetting(m_uiConfig);
     m_mainWindow->loadUIConfig(m_uiConfig);
-    m_mainWindow->setSetting(&m_csetting);
+    m_mainWindow->setSetting(m_csetting);
 }
 
 Controller::~Controller()
 {
     m_mainWindow->deleteLater();
     m_csignalView->deleteLater();
+    delete m_uiConfig;
+}
+
+void Controller::initConnection()
+{
+    connect(m_mainWindow, &MainWindow::sigReadDataRequested, this, &Controller::sltOpenRecord);
+    connect(this, &Controller::sigReadAutomaticDataRequested, this, &Controller::sltOpenRecord);
+    connect(m_mainWindow, &MainWindow::sigExportRequested,this, &Controller::sltExportRequested);
+    connect(m_mainWindow, &MainWindow::sigExportAllRequested, this, &Controller::sltExportAllRequested);
+    connect(this, &Controller::sigReadDataProcessEnd, this, &Controller::sltReadDataProcessEnd);
+    connect(this, &Controller::sigExportProcessEnd, this,[=](){QMessageBox::information(nullptr, "Export", "Export Process Completed");});
+    connect(m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
+    connect(m_mainWindow, &MainWindow::sigAppendLog, m_clog, &CLog::sltAppendLog);
+    connect(m_cexporter, &CExporter::sigExportProcessEnd, this,[=](){m_mainWindow->enableUIBtn(true);});
+}
+
+void Controller::createObj()
+{
+    m_mainWindow  = new MainWindow;
+    m_cwfdb       = new Cwfdb(this);
+    m_csignalView = new CSignalView();
+    m_cexporter   = new CExporter(this);
+    m_csetting    = new CSettings(this);
+    m_uiConfig    = new UIConfigs();
+    m_clog        = new CLog(this, m_mainWindow->getLogFiledWidget());
 }
 
 void Controller::sltOpenRecord(const SignalViewParameters& params)
@@ -167,4 +163,10 @@ void Controller::sltAnalyseRequested(const AnalyseCfg& analyseCfg)
             },
             Qt::QueuedConnection);
     });
+}
+
+void Controller::sltReadDataProcessEnd()
+{
+    m_csignalView->setData(m_cwfdb->getStructData());
+    m_mainWindow->enableUIBtn(true);
 }

@@ -10,7 +10,7 @@ class CSettings : public QObject
 public:
     explicit CSettings(QObject *parent = nullptr);
     void saveSetting(const UIConfigs& uiConfig);
-    void loadSetting(UIConfigs& uiConfig);
+    void loadSetting(UIConfigs *uiConfig);
 
     QSettings m_setting;
 

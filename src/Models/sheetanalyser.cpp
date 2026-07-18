@@ -58,8 +58,8 @@ bool SheetAnalyser::CompareSampleIdxAndType()
         const int INVALID_INDEX = -1;        // Sentinel for invalid alignment
 
         int lastMatchIndex = -1;  // Track the last valid match index
-        m_fileProcessRes.totalQRS = m_sheetRes.sampleIndexList2.size();
-
+        m_fileProcessRes.clear();
+        m_fileProcessRes.fileName = m_processFileName;
         for(int i = 0; i < csv1Size; i++)
         {
             int minDif = MAX_DIFF_THRESHOLD;
@@ -88,6 +88,7 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                     m_sheetRes.typeAlignList1.append(INVALID_INDEX);
                     m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(gap));
                     m_sheetRes.difTypeList.append(false);
+                    m_fileProcessRes.qrsPredict.fp++;
                 }
             }
 
@@ -98,7 +99,7 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                 m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
                 m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
                 m_sheetRes.difIndexList.append(minDif);
-                m_fileProcessRes.matchedQRS++;
+                m_fileProcessRes.qrsPredict.tp++;
                 lastMatchIndex = bestMatchIndex;
             }
             else
@@ -107,6 +108,7 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                 m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
                 m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
                 m_sheetRes.difIndexList.append(INVALID_INDEX);
+                m_fileProcessRes.qrsPredict.fn++;
                 // Don't update lastMatchIndex for invalid matches to preserve gap detection
             }
 
@@ -117,17 +119,33 @@ bool SheetAnalyser::CompareSampleIdxAndType()
             //In this part count type mach and qrs validity
             if(m_sheetRes.typeList1.at(i) == 1 && m_sheetRes.typeList2.at(bestMatchIndex) == 1)
             {
-                m_fileProcessRes.normalMatched++;
+                m_fileProcessRes.normalPredict.tp++;
             }
-            else if(m_sheetRes.typeList1.at(i) == 5 && m_sheetRes.typeList2.at(bestMatchIndex) == 5)
+            else if(m_sheetRes.typeList1.at(i) == 1 && m_sheetRes.typeList2.at(bestMatchIndex) != 1)
             {
-                m_fileProcessRes.pvcMatched++;
+                m_fileProcessRes.normalPredict.fn++;
             }
-            if(m_sheetRes.typeList1.at(i) == m_sheetRes.typeList2.at(bestMatchIndex))
+            else if(m_sheetRes.typeList1.at(i) != 1 && m_sheetRes.typeList2.at(bestMatchIndex) == 1)
             {
-                m_fileProcessRes.matchedType++;
+                m_fileProcessRes.normalPredict.fp++;
+            }
+
+            if(m_sheetRes.typeList1.at(i) == 5 && m_sheetRes.typeList2.at(bestMatchIndex) == 5)
+            {
+                m_fileProcessRes.pvcPredict.tp++;
+            }
+            else if(m_sheetRes.typeList1.at(i) == 5 && m_sheetRes.typeList2.at(bestMatchIndex) != 5)
+            {
+                m_fileProcessRes.pvcPredict.fn++;
+            }
+            else if(m_sheetRes.typeList1.at(i) != 5 && m_sheetRes.typeList2.at(bestMatchIndex) == 5)
+            {
+                m_fileProcessRes.pvcPredict.fp++;
             }
         }
+        m_fileProcessRes.qrsPredict.calcParams();
+        m_fileProcessRes.normalPredict.calcParams();
+        m_fileProcessRes.pvcPredict.calcParams();
     }
     catch(...)
     {

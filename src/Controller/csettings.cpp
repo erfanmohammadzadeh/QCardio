@@ -21,17 +21,17 @@ void CSettings::saveSetting(const UIConfigs &uiConfig)
     m_setting.sync();
 }
 
-void CSettings::loadSetting(UIConfigs &uiConfig)
+void CSettings::loadSetting(UIConfigs *uiConfig)
 {
-    uiConfig.setDataBasePath(m_setting.value("UI/DBPath").toString());
-    uiConfig.setDataBaseName(m_setting.value("UI/DBName").toString());
-    uiConfig.setLineEditSignal1Index(m_setting.value("UI/lineEditSignalIndex1").toInt());
-    uiConfig.setLineEditSignal2Index(m_setting.value("UI/lineEditSignalIndex2").toInt());
-    uiConfig.setLineEditSignal3Index(m_setting.value("UI/lineEditSignalIndex3").toInt());
-    uiConfig.setTargetFreq(m_setting.value("UI/signalTargetFreq").toInt());
-    uiConfig.setGainSignal(m_setting.value("UI/signalGain").toInt());
-    uiConfig.setSignalOfset(m_setting.value("UI/signalOfset").toInt());
-    uiConfig.setExportAll(m_setting.value("UI/hasExportAllReq").toBool());
-    uiConfig.setExportRC7(m_setting.value("UI/hasREC7Export").toBool());
-    uiConfig.setExportRaw(m_setting.value("UI/hasRAWExport").toBool());
+    uiConfig->setDataBasePath(m_setting.value("UI/DBPath").toString());
+    uiConfig->setDataBaseName(m_setting.value("UI/DBName").toString());
+    uiConfig->setLineEditSignal1Index(m_setting.value("UI/lineEditSignalIndex1").toInt());
+    uiConfig->setLineEditSignal2Index(m_setting.value("UI/lineEditSignalIndex2").toInt());
+    uiConfig->setLineEditSignal3Index(m_setting.value("UI/lineEditSignalIndex3").toInt());
+    uiConfig->setTargetFreq(m_setting.value("UI/signalTargetFreq").toInt());
+    uiConfig->setGainSignal(m_setting.value("UI/signalGain").toInt());
+    uiConfig->setSignalOfset(m_setting.value("UI/signalOfset").toInt());
+    uiConfig->setExportAll(m_setting.value("UI/hasExportAllReq").toBool());
+    uiConfig->setExportRC7(m_setting.value("UI/hasREC7Export").toBool());
+    uiConfig->setExportRaw(m_setting.value("UI/hasRAWExport").toBool());
 }

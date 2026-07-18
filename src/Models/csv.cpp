@@ -125,16 +125,32 @@ bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes
         return false;
 
     QTextStream out(&file);
-    out << "FileName,totalQRS,matchedQRS,pvcMatched,normalMatched,matchedType\n";
+    out << "FileName,QRS_TP,QRS_FP,QRS_FN,QRS_Se,QRS_P+,QRS_Accuracy,"
+           "Normal_TP,Normal_FP,Normal_FN,Normal_Se,Normal_P+,Normal_Accuracy,"
+           "PVC_TP,PVC_FP,PVC_FN,PVC_Se,PVC_P+,PVC_Accuracy\n";
 
     for (const FileProcessResult &res : fileProcessRes)
     {
         out << res.fileName << ","
-            << res.totalQRS << ","
-            << res.matchedQRS << ","
-            << res.pvcMatched << ","
-            << res.normalMatched << ","
-            << res.matchedType << "\n";
+            << res.qrsPredict.tp << ","
+            << res.qrsPredict.fp << ","
+            << res.qrsPredict.fn << ","
+            << res.qrsPredict.se << ","
+            << res.qrsPredict.p << ","
+            << res.qrsPredict.accuracy << ","
+            << res.normalPredict.tp << ","
+            << res.normalPredict.fp << ","
+            << res.normalPredict.fn << ","
+            << res.normalPredict.se << ","
+            << res.normalPredict.p << ","
+            << res.normalPredict.accuracy << ","
+            << res.pvcPredict.tp << ","
+            << res.pvcPredict.fp << ","
+            << res.pvcPredict.fn << ","
+            << res.pvcPredict.se << ","
+            << res.pvcPredict.p << ","
+            << res.pvcPredict.accuracy << ","
+            << "\n";
 
         // Check for write errors
         if (out.status() != QTextStream::Ok)

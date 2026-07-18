@@ -167,22 +167,52 @@ struct AnalyseCfg
     QString outputPath;
 };
 
-struct FileProcessResult
+struct Predicting
 {
-    QString fileName;
-    int totalQRS = 0;
-    int matchedQRS = 0;
-    int matchedType = 0;
-    int normalMatched = 0;
-    int pvcMatched = 0;
+    int   fn = 0; // False Negatives (we did not detect)
+    int   fp = 0; // False Positives (we detect more)
+    int   tp = 0; // True Positives (detect true)
+    float se = 0.0;
+    float p = 0.0;
+    float accuracy = 0.0;
+
+    void calcParams()
+    {
+        int total = this->tp + this->fp + this->fn;
+        if (total == 0) {
+            this->se = 0.0;
+            this->p = 0.0;
+            this->accuracy = 0.0;
+            return;
+        }
+
+        this->se = (static_cast<float>(this->tp) / (this->tp + this->fn)) * 100;
+        this->p  = (static_cast<float>(this->tp) / (this->tp + this->fp)) * 100;
+        this->accuracy = (static_cast<float>(this->tp) / total) * 100;
+    }
 
     void clear()
     {
-        totalQRS = 0;
-        matchedQRS = 0;
-        matchedType = 0;
-        normalMatched = 0;
-        pvcMatched = 0;
+        this->fn = 0;
+        this->fp = 0;
+        this->tp = 0;
+        this->se = 0.0;
+        this->p = 0.0;
+        this->accuracy = 0.0;
+    }
+};
+struct FileProcessResult
+{
+    QString fileName;
+    Predicting qrsPredict;
+    Predicting normalPredict;
+    Predicting pvcPredict;
+
+    void clear()
+    {
+        qrsPredict.clear();
+        normalPredict.clear();
+        pvcPredict.clear();
     }
 };
 

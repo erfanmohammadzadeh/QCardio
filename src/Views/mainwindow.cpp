@@ -143,22 +143,22 @@ void MainWindow::enableUIBtn(const bool& isEnable)
     ui->pushButtonRead->setEnabled(isEnable);
 }
 
-void MainWindow::loadUIConfig(const UIConfigs &uiConfig)
+void MainWindow::loadUIConfig(UIConfigs *uiConfig)
 {
     //Config Database Path
-    m_databasePath =  uiConfig.dataBasePath();
+    m_databasePath =  uiConfig->dataBasePath();
     Q_EMIT sigAppendLog("Database Path: " + m_databasePath);
     updateRecordList(m_databasePath);
 
-    ui->comboBoxDatabaseName->setCurrentText(uiConfig.dataBaseName());
-    ui->comboBoxSignal1->setCurrentIndex(uiConfig.lineEditSignal1Index());
-    ui->comboBoxSignal2->setCurrentIndex(uiConfig.lineEditSignal2Index());
-    ui->comboBoxSignal3->setCurrentIndex(uiConfig.lineEditSignal3Index());
-    ui->doubleSpinBoxGain->setValue(uiConfig.gainSignal());
-    ui->spinBoxTargetFreq->setValue(uiConfig.targetFreq());
-    ui->checkBoxExportAllData->setChecked(uiConfig.exportAll());
-    ui->radioButtonRec7->setChecked(uiConfig.exportRC7());
-    ui->radioButtonRawSample->setChecked(uiConfig.exportRaw());
+    ui->comboBoxDatabaseName->setCurrentText(uiConfig->dataBaseName());
+    ui->comboBoxSignal1->setCurrentIndex(uiConfig->lineEditSignal1Index());
+    ui->comboBoxSignal2->setCurrentIndex(uiConfig->lineEditSignal2Index());
+    ui->comboBoxSignal3->setCurrentIndex(uiConfig->lineEditSignal3Index());
+    ui->doubleSpinBoxGain->setValue(uiConfig->gainSignal());
+    ui->spinBoxTargetFreq->setValue(uiConfig->targetFreq());
+    ui->checkBoxExportAllData->setChecked(uiConfig->exportAll());
+    ui->radioButtonRec7->setChecked(uiConfig->exportRC7());
+    ui->radioButtonRawSample->setChecked(uiConfig->exportRaw());
 }
 
 void MainWindow::getUIConfig(UIConfigs &uiConfig)

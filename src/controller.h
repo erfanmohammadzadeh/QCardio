@@ -21,9 +21,13 @@ public:
     Cwfdb *m_cwfdb = nullptr;
     CSignalView* m_csignalView = nullptr;
     CExporter* m_cexporter = nullptr;
-    UIConfigs m_uiConfig;
-    CSettings m_csetting;
-    CLog *m_clog;
+    UIConfigs* m_uiConfig = nullptr;
+    CSettings* m_csetting = nullptr;
+    CLog* m_clog;
+
+private:
+    void initConnection();
+    void createObj();
 
 signals:
     void sigReadDataProcessEnd();
@@ -35,6 +39,7 @@ public Q_SLOTS:
     void sltExportRequested(const ExprotSetting &path);
     void sltExportAllRequested(const ExprotSetting &setting);
     void sltAnalyseRequested(const AnalyseCfg &analyseCfg);
+    void sltReadDataProcessEnd();
 
 
 };

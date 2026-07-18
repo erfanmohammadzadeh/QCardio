@@ -29,7 +29,7 @@ public:
     void updateRecordList(const QString &recordDirectory);
     void loadStyle();
     void enableUIBtn(const bool &isEnable);
-    void loadUIConfig(const UIConfigs& uiConfig);
+    void loadUIConfig(UIConfigs *uiConfig);
     void getUIConfig(UIConfigs &uiConfig);
 
     void setSetting(CSettings *newSetting);
