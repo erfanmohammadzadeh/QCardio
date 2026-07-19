@@ -38,6 +38,7 @@ HEADERS += \
     Controller/cwfdb.h \
     Models/annotationreader.h \
     Models/csv.h \
+    Models/define.h \
     Models/directoryvalidator.h \
     Models/sample.h \
     Models/sheetanalyser.h \

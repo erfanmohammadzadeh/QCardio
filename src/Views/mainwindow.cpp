@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
     loadStyle();
+    ui->labelVersion->setText(SOFTWARE_VERSION_STR);
 }
 
 MainWindow::~MainWindow()
@@ -294,5 +295,10 @@ void MainWindow::on_pushButtonCompare_clicked()
     analyseCfg.csvPath2 = m_CSV2FilePath;
     analyseCfg.outputPath = path;
     Q_EMIT sigAnalyseRequested(analyseCfg);
+}
+
+void MainWindow::on_toolButtonClearLogs_clicked()
+{
+    ui->textEditLogs->clear();
 }
 

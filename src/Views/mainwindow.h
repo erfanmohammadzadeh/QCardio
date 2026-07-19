@@ -12,6 +12,7 @@
 #include "Controller/csettings.h"
 #include <QListWidget>
 #include <QTextEdit>
+#include <Models/define.h>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -53,6 +54,8 @@ private slots:
     void on_pushButtonData2_clicked();
 
     void on_pushButtonCompare_clicked();
+
+    void on_toolButtonClearLogs_clicked();
 
 private:
     Ui::MainWindow *ui;
