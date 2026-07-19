@@ -14,6 +14,8 @@ private:
     AnalyseCfg m_analyseCfg;
     bool saveProcessFileResult(const QVector<FileProcessResult>& fileProcessRes);
 signals:
+    void sigAppendLog(const QString& text);
+
 };
 
 #endif // CANALYSER_H

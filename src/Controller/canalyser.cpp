@@ -40,7 +40,7 @@ bool CAnalyser::analyse()
 bool CAnalyser::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
 {
     QString path = m_analyseCfg.outputPath + "/" + "Report.csv";
-    qDebug() << "Res Path" << path;
+    Q_EMIT sigAppendLog("Result Path: " + path);
     CSV csvProcessFile(nullptr, path);
     return csvProcessFile.saveProcessFileResult(fileProcessRes);
 }

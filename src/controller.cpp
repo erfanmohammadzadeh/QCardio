@@ -146,8 +146,9 @@ void Controller::sltAnalyseRequested(const AnalyseCfg& analyseCfg)
 {
     QtConcurrent::run(QThreadPool::globalInstance(), [=]() {
         CAnalyser analyser(nullptr, analyseCfg);
-        const bool success = analyser.analyse();
+        connect(&analyser, &CAnalyser::sigAppendLog, m_clog, &CLog::sltAppendLog);
 
+        const bool success = analyser.analyse();
         QMetaObject::invokeMethod(
             m_mainWindow,
             [success]() {
