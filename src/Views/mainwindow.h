@@ -63,7 +63,7 @@ private:
     void setupSignal(QVBoxLayout *mainLayout, SignalViewWidget *signalWidget);
     void saveSetting();
     ExprotSetting::ExportMethod getExportMethod();
-    SignalViewParameters readSignalSetting();
+    bool readSignalSetting(SignalViewParameters &params);
     int m_listItemIdx = 0;
     QStringList m_heaFilesWithPath;
     QStringList m_headerFilePath;

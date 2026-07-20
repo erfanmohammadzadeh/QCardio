@@ -145,7 +145,6 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting
                 for (size_t sigIdx = 0; sigIdx < data.nsigs.size() && sigIdx < 3; ++sigIdx) {
                     int leadType = data.selectedLead[sigIdx];
                     int signalValue = data.nsigs[sigIdx][sampleIndex];
-
                     // Map to appropriate lead variable
                     switch (leadType) {
                     case 0: leadI = signalValue; break;

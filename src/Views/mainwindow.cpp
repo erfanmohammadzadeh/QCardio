@@ -39,7 +39,12 @@ void MainWindow::on_pushButtonRead_clicked()
     QString path = m_databasePath;
     if(DirectoryValidator::validateDirectory(path))
     {
-        SignalViewParameters params = readSignalSetting();
+        SignalViewParameters params;
+
+        if(!readSignalSetting(params))
+        {
+            QMessageBox::critical(nullptr, "Read Signal Information", "Error Accrued in read signal information");
+        }
         Q_EMIT sigReadDataRequested(params);
     }
     else
@@ -66,10 +71,13 @@ ExprotSetting::ExportMethod MainWindow::getExportMethod()
         return ExprotSetting::ExportMethod::RawSample;
 }
 
-SignalViewParameters MainWindow::readSignalSetting()
+bool MainWindow::readSignalSetting(SignalViewParameters& params)
 {
-    SignalViewParameters params;
+    if(m_databasePath.isEmpty())
+        return false;
     params.dbPath = m_databasePath;
+    if(m_heaFilesWithPath.isEmpty() || m_listItemIdx >= m_heaFilesWithPath.size() || m_listItemIdx < 0)
+        return false;
     params.signalFilePath = m_heaFilesWithPath.at(m_listItemIdx);
     params.targetFs = ui->spinBoxTargetFreq->value();
     params.gain = ui->doubleSpinBoxGain->value();
@@ -78,7 +86,7 @@ SignalViewParameters MainWindow::readSignalSetting()
     params.selectedLead[1] = ui->comboBoxSignal2->currentIndex();
     params.selectedLead[2] = ui->comboBoxSignal3->currentIndex();
     params.dbName = ui->comboBoxDatabaseName->currentText();
-    return params;
+    return true;
 }
 
 void MainWindow::setSetting(CSettings *newSetting)
@@ -183,9 +191,10 @@ void MainWindow::on_listWidgetItems_currentRowChanged(int currentRow)
     if (currentRow < 0 || currentRow >= m_headerFilePath.size()) {
         ui->textEditSignalInfo->clear();
         m_listItemIdx = -1;
+        ui->pushButtonRead->setEnabled(false);
         return;
     }
-
+    ui->pushButtonRead->setEnabled(true);
     m_listItemIdx = currentRow;
 
     QFile file(m_headerFilePath.at(currentRow));
@@ -212,7 +221,11 @@ void MainWindow::on_pushButtonExport_clicked()
         enableUIBtn(false);
         ExprotSetting expSetting;
         expSetting.method = getExportMethod();
-        expSetting.params = readSignalSetting();
+        if(!readSignalSetting(expSetting.params))
+        {
+            enableUIBtn(true);
+            QMessageBox::critical(nullptr, "Read Signal Information", "Error Accrued in read signal information");
+        }
         expSetting.outputPath = path;
         expSetting.pathList = m_heaFilesWithPath;
         expSetting.compressingRequsted = ui->checkBoxCompression->isChecked();
