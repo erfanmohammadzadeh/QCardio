@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
+#include <QDirIterator>
 #include <QSlider>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -94,24 +95,40 @@ void MainWindow::setSetting(CSettings *newSetting)
     m_setting = newSetting;
 }
 
-void MainWindow::addFileToListWidget(QListWidget *windget,
-                                     QStringList &filepath,
-                                     QStringList& filename,
-                                     const QString&type,
-                                     const QString&path)
+void MainWindow::addFileToListWidget(QListWidget *widget,
+                                     QStringList &filePaths,
+                                     QStringList &fileNames,
+                                     const QString& type,
+                                     const QString &path)
 {
-    QDir dir(path);
-    filepath.clear();
-    filename.clear();
-    windget->clear();
-    QFileInfoList infoList = dir.entryInfoList();
-    for (const QFileInfo& info : std::as_const(infoList)) {
-        if (info.suffix() == type) {
-            filename << info.fileName().split(".").first();
-            filepath << info.filePath();
+    qDebug() << "addFileToListWidget called";
+    widget->clear();
+    filePaths.clear();
+    fileNames.clear();
+
+    widget->setUpdatesEnabled(false);
+
+    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+
+    while (it.hasNext())
+    {
+        it.next();
+
+        const QFileInfo info = it.fileInfo();
+
+        if (info.suffix() != type ||
+            !widget->findItems(info.completeBaseName(), Qt::MatchExactly).isEmpty())
+        {
+            continue;
         }
+
+        filePaths.append(info.absoluteFilePath());
+        fileNames.append(info.completeBaseName());
+
+        widget->addItem(info.completeBaseName());
     }
-    windget->addItems(filename);
+    widget->setUpdatesEnabled(true);
+    Q_EMIT sigAppendLog(QString("%1 file added to list.").arg(fileNames.size()));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -135,7 +152,6 @@ void MainWindow::updateRecordList(const QString& recordDirectory)
     if(!DirectoryValidator::validateDirectory(recordDirectory))
         return;
     addFileToListWidget(ui->listWidgetItems,m_headerFilePath,m_heaFilesWithPath,"hea", recordDirectory);
-    ui->listWidgetItems->addItems(m_heaFilesWithPath);
 }
 
 void MainWindow::loadStyle()

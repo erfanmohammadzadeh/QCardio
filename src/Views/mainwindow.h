@@ -34,7 +34,12 @@ public:
     void getUIConfig(UIConfigs &uiConfig);
 
     void setSetting(CSettings *newSetting);
-    void addFileToListWidget(QListWidget *windget, QStringList &filepath, QStringList& filename , const QString &type, const QString &path);
+    void addFileToListWidget(QListWidget *widget,
+                             QStringList &filePaths,
+                             QStringList &fileNames,
+                             const QString& type,
+                             const QString &path);
+    // void addFileToListWidget(QListWidget *windget, QStringList &filepath, QStringList& filename , const QString &type, const QString &path);
     QTextEdit *getLogFiledWidget();
 
 private slots:
