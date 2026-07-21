@@ -21,7 +21,8 @@ Follow the installation instructions for your operating system (Linux, macOS, or
 Edit shell script and specify input AHA dataset and an output for store output path.
 
 use
-
+```
 chmod +x ./convert_AHA2MIT
-
-to set execute permission. this run it to convert dataset.
+```
+to set execute permission.
+Run it to convert dataset from AHA to MIT-BIH.
