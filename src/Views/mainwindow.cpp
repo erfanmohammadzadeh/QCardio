@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tabWidget->setCurrentIndex(0);
     loadStyle();
     ui->labelVersion->setText(SOFTWARE_VERSION_STR);
+    ui->comboBoxDatabaseName->addItems(datasetName);
 }
 
 MainWindow::~MainWindow()
@@ -81,6 +82,7 @@ bool MainWindow::readSignalSetting(SignalViewParameters& params)
         return false;
     params.signalFilePath = m_heaFilesWithPath.at(m_listItemIdx);
     params.targetFs = ui->spinBoxTargetFreq->value();
+    params.sourceFs = ui->spinBoxSourceFreq->value();
     params.gain = ui->doubleSpinBoxGain->value();
     params.offset = ui->spinBoxOffset->value();
     params.selectedLead[0] = ui->comboBoxSignal1->currentIndex();
@@ -329,5 +331,14 @@ void MainWindow::on_pushButtonCompare_clicked()
 void MainWindow::on_toolButtonClearLogs_clicked()
 {
     ui->textEditLogs->clear();
+}
+
+
+void MainWindow::on_comboBoxDatabaseName_currentTextChanged(const QString &arg1)
+{
+    if(arg1 == datasetName[1])
+        ui->spinBoxSourceFreq->setValue(250);
+    else if(arg1 == datasetName[0])
+        ui->spinBoxSourceFreq->setValue(360);
 }
 

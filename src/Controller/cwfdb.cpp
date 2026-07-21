@@ -35,6 +35,8 @@ bool Cwfdb::readData(const SignalViewParameters &params)
     int numberOfSignals = 0;
     // std::vector<WFDB_Siginfo> siginfo;
     WFDB_Frequency target_fs = params.targetFs;
+
+    //specify database name
     numberOfSignals = isigopen(const_cast<char*>(params.signalFilePath.toStdString().c_str()), NULL, 0);
 
     std::vector<WFDB_Siginfo> siginfo(numberOfSignals);
@@ -102,7 +104,7 @@ bool Cwfdb::readData(const SignalViewParameters &params)
 bool Cwfdb::readAnot(const SignalViewParameters &params)
 {
     // AnnotationReader reader(params.dbPath, params.signalFilePath, "atr");
-    AnnotationReader reader(params.dbPath, params.signalFilePath, "atr");
+    AnnotationReader reader(params, "atr");
     if (!reader.loadAnnotations()) {
         qCritical() << "Failed to load annotations";
         return false;

@@ -62,6 +62,8 @@ private slots:
 
     void on_toolButtonClearLogs_clicked();
 
+    void on_comboBoxDatabaseName_currentTextChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
 

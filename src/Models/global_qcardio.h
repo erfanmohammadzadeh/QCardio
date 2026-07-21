@@ -94,6 +94,7 @@ struct SignalViewParameters
     QString dbPath;
     QString dbName;
     quint8 selectedLead[LEAD_COUNT];
+    int sourceFs = 360;
     int targetFs = 178;
     float gain = 1.0;
     float offset = 0.0;
@@ -215,5 +216,7 @@ struct FileProcessResult
         pvcPredict.clear();
     }
 };
+
+const static QStringList datasetName = {"MIT-BIH", "AHA", "ESC", "CU"};
 
 #endif // GLOBAL_QCARDIO_H

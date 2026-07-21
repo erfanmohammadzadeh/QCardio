@@ -1,9 +1,9 @@
 #include "annotationreader.h"
 
-AnnotationReader::AnnotationReader(const QString &dbPath, const QString &recordName, const QString &annotatorName)
-    :m_databaseName(dbPath), m_recordName(recordName), m_annotatorName(annotatorName)
+AnnotationReader::AnnotationReader(const SignalViewParameters &signalParam, const QString &annotatorName)
+    :m_databaseName(signalParam.dbPath), m_recordName(signalParam.dbName), m_annotatorName(annotatorName)
 {
-    setwfdb(const_cast<char*>(dbPath.toStdString().c_str()));
+    setwfdb(const_cast<char*>(signalParam.dbPath.toStdString().c_str()));
 }
 
 bool AnnotationReader::loadAnnotations() {
@@ -17,7 +17,7 @@ bool AnnotationReader::loadAnnotations() {
     double freq = sampfreq((char*)recordBA.constData());
     if (freq < 0) {
         qWarning() << "Could not read sampling frequency for" << m_recordName << ". Defaulting to 360 Hz.";
-        m_originalFrequency = 360.0; // MIT-BIH Arrhythmia Database default
+        m_originalFrequency = m_sourceFreq; // MIT-BIH Arrhythmia Database default
     } else {
         m_originalFrequency = freq;
         qDebug() << "Original Frequency:" << m_originalFrequency << "Hz";
