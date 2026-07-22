@@ -1,13 +1,13 @@
 #include "annotationreader.h"
 
 AnnotationReader::AnnotationReader(const SignalViewParameters &signalParam, const QString &annotatorName)
-    :m_databaseName(signalParam.dbPath), m_recordName(signalParam.dbName), m_annotatorName(annotatorName)
+    :m_databaseName(signalParam.dbPath), m_recordName(signalParam.signalFilePath), m_annotatorName(annotatorName)
 {
     setwfdb(const_cast<char*>(signalParam.dbPath.toStdString().c_str()));
 }
 
 bool AnnotationReader::loadAnnotations() {
-    qDebug() << "Record:" << m_recordName;
+    qDebug() << "Record Atr:" << m_recordName;
     m_annotatorName = "atr";
 
     QByteArray recordBA = m_recordName.toLatin1();
@@ -25,6 +25,7 @@ bool AnnotationReader::loadAnnotations() {
 
     WFDB_Anninfo annInfo;
     annInfo.name = (char*)annotatorBA.constData();
+    qDebug() << annInfo.name << " *-*-* " << (char*)recordBA.constData();
     annInfo.stat = WFDB_READ;
 
     if (annopen((char*)recordBA.constData(), &annInfo, 1) < 0) {
