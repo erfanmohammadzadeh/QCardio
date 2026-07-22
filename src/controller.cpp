@@ -32,7 +32,10 @@ void Controller::initConnection()
     connect(this, &Controller::sigExportProcessEnd, this,[=](){QMessageBox::information(nullptr, "Export", "Export Process Completed");});
     connect(m_mainWindow, &MainWindow::sigAnalyseRequested, this, &Controller::sltAnalyseRequested);
     connect(m_mainWindow, &MainWindow::sigAppendLog, m_clog, &CLog::sltAppendLog);
+    connect(this, &Controller::sigAppendLog, m_clog, &CLog::sltAppendLog);
     connect(m_cexporter, &CExporter::sigExportProcessEnd, this,[=](){m_mainWindow->enableUIBtn(true);});
+    connect(m_cwfdb, &Cwfdb::sigAppnedLog, m_clog, &CLog::sltAppendLog);
+    connect(m_cexporter, &CExporter::sigAppendLog, m_clog, &CLog::sltAppendLog);
 }
 
 void Controller::createObj()
@@ -70,6 +73,7 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
     progressBar->setRange(0, setting.pathList.size());
     progressBar->setValue(0);
     progressBar->setVisible(true);
+    m_mainWindow->addProgressBar(progressBar);
 
     QSharedPointer<QAtomicInt> counter = QSharedPointer<QAtomicInt>::create(0);
     QFutureWatcher<void> *watcher = new QFutureWatcher<void>();
@@ -91,8 +95,7 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
 
                                                      while (!success && retryCount < MAX_RETRIES)
                                                      {
-                                                         qDebug() << "Attempting to read:" << id << "retry" << retryCount;
-
+                                                         Q_EMIT sigAppendLog(QString("Attempting to read %1 retry %2 count").arg(id).arg(retryCount));
                                                          // Directly call readData instead of using signal
                                                          success = m_cwfdb->readData(settingCopy);
                                                          success = m_cwfdb->readAnot(settingCopy) && success;
@@ -101,9 +104,7 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
                                                          if (!success)
                                                          {
                                                              retryCount++;
-                                                             qDebug() << "Read failed for" << id << "retry" << retryCount;
-
-                                                             // Optional: Wait before retrying
+                                                             Q_EMIT sigAppendLog(QString("Read failed for %1 retry %2").arg(id).arg(retryCount));
                                                              QThread::msleep(50);
                                                          }
                                                      }
@@ -111,15 +112,15 @@ void Controller::sltExportAllRequested(const ExprotSetting& setting)
                                                      if (success)
                                                      {
                                                          // Only export if read was successful
-                                                         qDebug() << "Exporting:" << id;
+                                                         Q_EMIT sigAppendLog("Exporting:" + id);
                                                          MIT_BIH_ECGData data = m_cwfdb->getStructData();
                                                          data.filename = id;
                                                          m_cexporter->exportData(data, setting);
                                                      }
                                                      else
                                                      {
-                                                         qDebug() << "Failed to read data for" << id << "after" << MAX_RETRIES << "attempts";
                                                          // Handle failure - maybe skip this file or log error
+                                                         Q_EMIT sigAppendLog(QString("Failed to read data for %1 after %2 attempts.").arg(id).arg(MAX_RETRIES));
                                                      }
 
                                                      // Update progress regardless of success/failure

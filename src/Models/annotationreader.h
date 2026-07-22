@@ -2,10 +2,13 @@
 #define ANNOTATIONREADER_H
 #include <Models/global_qcardio.h>
 #include "wfdb/wfdb.h"
-
-class AnnotationReader {
+#include <QObject>
+class AnnotationReader : public QObject {
+    Q_OBJECT
 public:
-    AnnotationReader(const SignalViewParameters& signalParam = SignalViewParameters(), const QString& annotatorName = "atr");
+    AnnotationReader(QObject *parent = nullptr,
+                     const SignalViewParameters& signalParam = SignalViewParameters(),
+                     const QString& annotatorName = "atr");
     bool loadAnnotations();
     const QVector<AnnotationData>& getAnnotations() const;
     QVector<RRInterval> computeRRIntervals(const QVector<AnnotationData>& annotations, int samplingRate);
@@ -17,6 +20,8 @@ private:
     QVector<AnnotationData> m_annotations;
     double m_originalFrequency;
     double m_resampledFrequency;
+signals:
+    void sigAppnedLog(const QString& text);
 };
 
 #endif // ANNOTATIONREADER_H

@@ -29,9 +29,7 @@ bool Cwfdb::readData(const SignalViewParameters &params)
 {
     clearVec();
     setwfdb(const_cast<char*>(params.dbPath.toStdString().c_str()));
-
-    qDebug() << "SN " << params.signalFilePath << "DB " <<params.dbName << "PA "<<params.dbPath;
-
+    Q_EMIT sigAppnedLog("Rec: " + params.signalFilePath + "  DBName: " +params.dbName + "DB Path: " +params.dbPath);
     int numberOfSignals = 0;
     // std::vector<WFDB_Siginfo> siginfo;
     WFDB_Frequency target_fs = params.targetFs;
@@ -41,7 +39,7 @@ bool Cwfdb::readData(const SignalViewParameters &params)
 
     std::vector<WFDB_Siginfo> siginfo(numberOfSignals);
     if (isigopen(const_cast<char*>(params.signalFilePath.toStdString().c_str()), siginfo.data(), numberOfSignals) != numberOfSignals) {
-        qDebug() << "Failed to read header";
+        Q_EMIT sigAppnedLog("Failed to read header");
         return false;
     }
 
@@ -52,13 +50,13 @@ bool Cwfdb::readData(const SignalViewParameters &params)
         // siginfo.resize(numberOfSignals);
 
         if (isigopen(const_cast<char*>(params.signalFilePath.toStdString().c_str()), siginfo.data(), numberOfSignals) != numberOfSignals) {
-            qDebug() << "Failed to read header";
+            Q_EMIT sigAppnedLog("Failed to read header");
             return false;
         }
 
         long totalSamples = siginfo[0].nsamp;
         if (totalSamples <= 0) {
-            qDebug() << "No samples in file";
+            Q_EMIT sigAppnedLog( "No samples in file");
             return false;
         }
 
@@ -104,14 +102,16 @@ bool Cwfdb::readData(const SignalViewParameters &params)
 bool Cwfdb::readAnot(const SignalViewParameters &params)
 {
     // AnnotationReader reader(params.dbPath, params.signalFilePath, "atr");
-    AnnotationReader reader(params, "atr");
-    if (!reader.loadAnnotations()) {
-        qCritical() << "Failed to load annotations";
+    AnnotationReader *reader = new AnnotationReader(nullptr, params, "atr");
+    connect(reader, &AnnotationReader::sigAppnedLog, this, &Cwfdb::sigAppnedLog);
+    if (!reader->loadAnnotations()) {
+        Q_EMIT sigAppnedLog("Failed to load annotations");
+        reader->deleteLater();
         return false;
     }
 
-    m_strData.anotList = reader.getAnnotations();
-    m_strData.rrIntervals = reader.computeRRIntervals(m_strData.anotList, params.targetFs);
+    m_strData.anotList = reader->getAnnotations();
+    m_strData.rrIntervals = reader->computeRRIntervals(m_strData.anotList, params.targetFs);
 
     if (!m_strData.rrIntervals.isEmpty()) {
         double meanRR = 0.0;
@@ -132,6 +132,7 @@ bool Cwfdb::readAnot(const SignalViewParameters &params)
         qDebug() << QString("  HR: %1 bpm").arg(60.0 / meanRR, 0, 'f', 1);
 #endif
     }
+    reader->deleteLater();
     return true;
 }
 

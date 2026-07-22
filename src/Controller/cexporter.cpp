@@ -17,14 +17,14 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSett
 {
     // Validate input
     if (data.totalSample <= 0 || data.nsigs.isEmpty()) {
-        qWarning() << "Invalid data: no samples or leads";
+        Q_EMIT sigAppendLog("Invalid data: no samples or leads");
         return;
     }
 
     // Determine how many leads to export (max 3)
     const int numLeads = qMin(3, data.nsigs.size());
     if (numLeads == 0) {
-        qWarning() << "No leads available for export";
+        Q_EMIT sigAppendLog("No leads available for export");
         return;
     }
 
@@ -91,13 +91,13 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSett
 bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
 {
     if (data.nsigs.isEmpty()) {
-        qDebug() << "No sample data to save";
+        Q_EMIT sigAppendLog("No sample data to save");
         return false;
     }
 
     const int numLeads = qMin(3, data.nsigs.size());
     if (numLeads == 0) {
-        qWarning() << "No leads available for export";
+        Q_EMIT sigAppendLog("No leads available for export");
         return false;
     }
 
@@ -239,7 +239,7 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting
 
     QFile file(filePath);
     if (!file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        qWarning() << "Failed to open file for writing:" << filePath;
+        Q_EMIT sigAppendLog("Failed to open file for writing:" + filePath);
         return false;
     }
 
@@ -247,22 +247,18 @@ bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting
     file.close();
 
     if (bytesWritten != compressedData.size()) {
-        qWarning() << "Failed to write complete file:" << filePath;
+        Q_EMIT sigAppendLog("Failed to write complete file:" + filePath);
         return false;
     }
-
-    qDebug() << "Sample data saved successfully:" << filePath;
-    qDebug() << "Samples saved:" << totalSamples;
-    qDebug() << "Packets created:" << packetsNeeded;
-    qDebug() << "Raw data size:" << rawData.size() << "bytes";
-    qDebug() << "Expected packet size:" << packetLen << "bytes";
+    Q_EMIT sigAppendLog(QString("%1 Samples saved.").arg(totalSamples));
 
     // Verify packet size
     if (rawData.size() != packetsNeeded * packetLen) {
-        qWarning() << "Warning: Data size doesn't match expected packet size!";
-        qWarning() << "Expected:" << packetsNeeded * packetLen << "Actual:" << rawData.size();
+        Q_EMIT sigAppendLog(QString("Warning: Data size doesn't match expected packet size!\n"
+                                    "Expected: %1 Actual: %2")
+                                .arg(packetsNeeded * packetLen)
+                                .arg(rawData.size()));
     }
-
     return true;
 }
 

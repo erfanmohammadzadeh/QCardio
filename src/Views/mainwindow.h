@@ -13,6 +13,7 @@
 #include <QListWidget>
 #include <QTextEdit>
 #include <Models/define.h>
+#include <QProgressBar>
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -39,6 +40,7 @@ public:
                              QStringList &fileNames,
                              const QString& type,
                              const QString &path);
+    void addProgressBar(QProgressBar *bar);
     // void addFileToListWidget(QListWidget *windget, QStringList &filepath, QStringList& filename , const QString &type, const QString &path);
     QTextEdit *getLogFiledWidget();
 
@@ -60,9 +62,9 @@ private slots:
 
     void on_pushButtonCompare_clicked();
 
-    void on_toolButtonClearLogs_clicked();
-
     void on_comboBoxDatabaseName_currentTextChanged(const QString &arg1);
+
+    void on_checkBox_checkStateChanged(const Qt::CheckState &arg1);
 
 private:
     Ui::MainWindow *ui;

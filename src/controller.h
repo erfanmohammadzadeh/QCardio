@@ -33,6 +33,7 @@ signals:
     void sigReadDataProcessEnd();
     void sigExportProcessEnd();
     void sigReadAutomaticDataRequested(const SignalViewParameters& params);
+    void sigAppendLog(const QString& text);
 
 public Q_SLOTS:
     void sltOpenRecord(const SignalViewParameters& params);

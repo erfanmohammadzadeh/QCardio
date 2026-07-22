@@ -1,13 +1,15 @@
 #include "annotationreader.h"
 
-AnnotationReader::AnnotationReader(const SignalViewParameters &signalParam, const QString &annotatorName)
-    :m_databaseName(signalParam.dbPath), m_recordName(signalParam.signalFilePath), m_annotatorName(annotatorName)
+AnnotationReader::AnnotationReader(QObject* parent,
+                                   const SignalViewParameters &signalParam,
+                                   const QString &annotatorName) :
+    QObject(parent),m_databaseName(signalParam.dbPath), m_recordName(signalParam.signalFilePath), m_annotatorName(annotatorName)
 {
     setwfdb(const_cast<char*>(signalParam.dbPath.toStdString().c_str()));
 }
 
 bool AnnotationReader::loadAnnotations() {
-    qDebug() << "Record Atr:" << m_recordName;
+    Q_EMIT sigAppnedLog("Record Atribute: " + m_recordName);
     m_annotatorName = "atr";
 
     QByteArray recordBA = m_recordName.toLatin1();
@@ -16,20 +18,19 @@ bool AnnotationReader::loadAnnotations() {
     // 1. Read the sampling frequency first using the record name
     double freq = sampfreq((char*)recordBA.constData());
     if (freq < 0) {
-        qWarning() << "Could not read sampling frequency for" << m_recordName << ". Defaulting to 360 Hz.";
         m_originalFrequency = m_sourceFreq; // MIT-BIH Arrhythmia Database default
+        Q_EMIT sigAppnedLog("Could not read sampling frequency for" + m_recordName + QString(". Defaulting to %1 Hz.").arg(m_sourceFreq));
     } else {
         m_originalFrequency = freq;
-        qDebug() << "Original Frequency:" << m_originalFrequency << "Hz";
+        Q_EMIT sigAppnedLog(QString("Original Frequency %1Hz").arg(m_originalFrequency));
     }
 
     WFDB_Anninfo annInfo;
     annInfo.name = (char*)annotatorBA.constData();
-    qDebug() << annInfo.name << " *-*-* " << (char*)recordBA.constData();
     annInfo.stat = WFDB_READ;
 
     if (annopen((char*)recordBA.constData(), &annInfo, 1) < 0) {
-        qCritical() << "Failed to open annotations for" << m_recordName;
+        Q_EMIT sigAppnedLog( "Failed to open annotations for" + m_recordName);
         return false;
     }
 
@@ -77,10 +78,11 @@ QVector<RRInterval> AnnotationReader::computeRRIntervals(
         if (wfdb_isqrs(ann.anntyp))
             qrsBeats.append(ann);
 
-    qDebug() << "Found" << qrsBeats.size() << "QRS beats";
+    Q_EMIT sigAppnedLog(QString("%1 QRS index Found").arg(qrsBeats.size()));
+
 
     if (qrsBeats.size() < 2) {
-        qWarning() << "Not enough QRS beats to compute RR intervals";
+        Q_EMIT sigAppnedLog( "Not enough QRS beats to compute RR intervals");
         return rrIntervals;
     }
 
@@ -94,6 +96,6 @@ QVector<RRInterval> AnnotationReader::computeRRIntervals(
         rrIntervals.append(rr);
     }
 
-    qDebug() << "Computed" << rrIntervals.size() << "RR intervals";
+    Q_EMIT sigAppnedLog(QString("%1 RR intervals computed").arg(rrIntervals.size()));
     return rrIntervals;
 }

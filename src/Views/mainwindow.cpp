@@ -103,7 +103,6 @@ void MainWindow::addFileToListWidget(QListWidget *widget,
                                      const QString& type,
                                      const QString &path)
 {
-    qDebug() << "addFileToListWidget called";
     widget->clear();
     filePaths.clear();
     fileNames.clear();
@@ -130,7 +129,12 @@ void MainWindow::addFileToListWidget(QListWidget *widget,
         widget->addItem(info.completeBaseName());
     }
     widget->setUpdatesEnabled(true);
-    Q_EMIT sigAppendLog(QString("%1 file added to list.").arg(fileNames.size()));
+    Q_EMIT sigAppendLog(QString("%1 record added to list.").arg(fileNames.size()));
+}
+
+void MainWindow::addProgressBar(QProgressBar* bar)
+{
+    ui->gridLayoutProgressBar->addWidget(bar);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -328,17 +332,17 @@ void MainWindow::on_pushButtonCompare_clicked()
     Q_EMIT sigAnalyseRequested(analyseCfg);
 }
 
-void MainWindow::on_toolButtonClearLogs_clicked()
-{
-    ui->textEditLogs->clear();
-}
-
-
 void MainWindow::on_comboBoxDatabaseName_currentTextChanged(const QString &arg1)
 {
     if(arg1 == datasetName[1])
         ui->spinBoxSourceFreq->setValue(250);
     else if(arg1 == datasetName[0])
         ui->spinBoxSourceFreq->setValue(360);
+}
+
+
+void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
+{
+    ui->textEditLogs->setVisible(arg1 == Qt::Checked);
 }
 

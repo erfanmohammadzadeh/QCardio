@@ -19,6 +19,7 @@ private:
 
 signals:
     void sigExportProcessEnd();
+    void sigAppendLog(const QString& text);
 };
 
 #endif // CEXPORTER_H

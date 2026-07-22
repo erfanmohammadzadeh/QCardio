@@ -29,6 +29,7 @@ public:
     MIT_BIH_ECGData getStructData() const;
 
 signals:
+    void sigAppnedLog(const QString& text);
 };
 
 #endif // CWFDB_H
