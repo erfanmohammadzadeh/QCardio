@@ -28,6 +28,11 @@ void MainWindow::on_pushButtonSetPath_clicked()
     QString path = QFileDialog::getExistingDirectory(nullptr,
                                                      "Select Database Path",
                                                      QDir::homePath());
+    if(!DirectoryValidator::validateDirectory(path))
+    {
+        QMessageBox::critical(nullptr, "Database Path", "Path is not readable");
+        return;
+    }
     updateRecordList(path);
     m_databasePath = path;
     Q_EMIT sigAppendLog("Data base: " + path);
@@ -39,18 +44,18 @@ void MainWindow::on_pushButtonRead_clicked()
     enableUIBtn(false);
 
     QString path = m_databasePath;
-    if(DirectoryValidator::validateDirectory(path))
+    if(!DirectoryValidator::validateDirectory(path))
     {
-        SignalViewParameters params;
-
-        if(!readSignalSetting(params))
-        {
-            QMessageBox::critical(nullptr, "Read Signal Information", "Error Accrued in read signal information");
-        }
-        Q_EMIT sigReadDataRequested(params);
-    }
-    else
         QMessageBox::critical(nullptr, "Database Path", "Path is not readable");
+        return;
+    }
+
+    SignalViewParameters params;
+    if(!readSignalSetting(params))
+    {
+        QMessageBox::critical(nullptr, "Read Signal Information", "Error Accrued in read signal information");
+    }
+    Q_EMIT sigReadDataRequested(params);
 }
 
 void MainWindow::setupSignal(QVBoxLayout *mainLayout, SignalViewWidget *signalView)
@@ -110,7 +115,6 @@ void MainWindow::addFileToListWidget(QListWidget *widget,
     widget->setUpdatesEnabled(false);
 
     QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
-
     while (it.hasNext())
     {
         it.next();
@@ -125,7 +129,10 @@ void MainWindow::addFileToListWidget(QListWidget *widget,
 
         filePaths.append(info.absoluteFilePath());
         fileNames.append(info.completeBaseName());
-
+        // QListWidgetItem *item = new QListWidgetItem(info.completeBaseName());
+        // item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+        // item->setCheckState(Qt::Unchecked);
+        // widget->addItem(item);
         widget->addItem(info.completeBaseName());
     }
     widget->setUpdatesEnabled(true);
@@ -238,30 +245,29 @@ void MainWindow::on_listWidgetItems_currentRowChanged(int currentRow)
 void MainWindow::on_pushButtonExport_clicked()
 {
     QString path = QFileDialog::getExistingDirectory(nullptr, "Select Directory To Export", QDir::homePath());
-    if(DirectoryValidator::validateDirectory(path))
+    if(!DirectoryValidator::validateDirectory(path))
     {
-        enableUIBtn(false);
-        ExprotSetting expSetting;
-        expSetting.method = getExportMethod();
-        if(!readSignalSetting(expSetting.params))
-        {
-            enableUIBtn(true);
-            QMessageBox::critical(nullptr, "Read Signal Information", "Error Accrued in read signal information");
-        }
-        expSetting.outputPath = path;
-        expSetting.pathList = m_heaFilesWithPath;
-        expSetting.compressingRequsted = ui->checkBoxCompression->isChecked();
-        expSetting.exportCSV = ui->checkBoxExportCSV->isChecked();
-        if(!ui->checkBoxExportAllData->isChecked())
-            Q_EMIT sigExportRequested(expSetting);
-        else
-        {
-            Q_EMIT sigExportAllRequested(expSetting);
-        }
-    }
-    else
         QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
-
+        return;
+    }
+    enableUIBtn(false);
+    ExprotSetting expSetting;
+    expSetting.method = getExportMethod();
+    if(!readSignalSetting(expSetting.params))
+    {
+        enableUIBtn(true);
+        QMessageBox::critical(nullptr, "Read Signal Information", "Error Accrued in read signal information");
+    }
+    expSetting.outputPath = path;
+    expSetting.pathList = m_heaFilesWithPath;
+    expSetting.compressingRequsted = ui->checkBoxCompression->isChecked();
+    expSetting.exportCSV = ui->checkBoxExportCSV->isChecked();
+    if(!ui->checkBoxExportAllData->isChecked())
+        Q_EMIT sigExportRequested(expSetting);
+    else
+    {
+        Q_EMIT sigExportAllRequested(expSetting);
+    }
 }
 
 
@@ -275,29 +281,28 @@ void MainWindow::on_pushButtonUpdate_clicked()
 void MainWindow::on_pushButtonData1_clicked()
 {
     QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 1 Directory", QDir::homePath());
-    if(DirectoryValidator::validateDirectory(path))
+    if(!DirectoryValidator::validateDirectory(path))
     {
-        Q_EMIT sigAppendLog("Selected Path 1"+path);
-        addFileToListWidget(ui->listWidgetDir1,
-                            m_CSV1FilePath,
-                            m_CSV1FilesWithPath, "csv", path);
-    }
-    else
         QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
-
+        return;
+    }
+    Q_EMIT sigAppendLog("Selected Path 1"+path);
+    addFileToListWidget(ui->listWidgetDir1,
+                        m_CSV1FilePath,
+                        m_CSV1FilesWithPath, "csv", path);
 }
 
 
 void MainWindow::on_pushButtonData2_clicked()
 {
     QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 2 Directory", QDir::homePath());
-    if(DirectoryValidator::validateDirectory(path))
+    if(!DirectoryValidator::validateDirectory(path))
     {
-        Q_EMIT sigAppendLog("selected Path 2"+path);
-        addFileToListWidget(ui->listWidgetDir2,m_CSV2FilePath,m_CSV2FilesWithPath, "csv", path);
-    }
-    else
         QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
+        return;
+    }
+    Q_EMIT sigAppendLog("selected Path 2"+path);
+    addFileToListWidget(ui->listWidgetDir2,m_CSV2FilePath,m_CSV2FilesWithPath, "csv", path);
 }
 
 

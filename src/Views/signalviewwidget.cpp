@@ -4,6 +4,7 @@
 #include <QWheelEvent>
 #include <QPainterPath>
 #include <QtMath>
+#include <QTime>
 
 const QColor SignalViewWidget::s_leadColors[MaxLeads] = {
     QColor(0, 160, 80),
@@ -30,6 +31,9 @@ SignalViewWidget::SignalViewWidget(QWidget *parent)
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setMouseTracking(true);
     setFocusPolicy(Qt::StrongFocus);
+    m_scrollBar = new QScrollBar(this);
+    connect(m_scrollBar, &QScrollBar::valueChanged, this, &SignalViewWidget::sltValueChanged);
+    m_scrollBar->setVisible(false);
 }
 
 void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
@@ -39,6 +43,8 @@ void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
 {
     m_leads.clear();
     m_leadNames.clear();
+
+    configScrollBar(leads);
 
     const int count = qMin(MaxLeads, leads.size());
     for (int i = 0; i < count; ++i) {
@@ -208,10 +214,12 @@ void SignalViewWidget::drawGrid(QPainter &painter, const QRectF &plotArea)
     for (int i = 0; i <= timeTicks; i+= intervalTick) {
         const qreal t = m_timeOffsetSec + (i / static_cast<qreal>(timeTicks)) * m_visibleDurationSec;
         const qreal x = timeToX(t, plotArea);
+        QTime time = QTime(0, 0).addSecs(static_cast<int>(t));
         painter.drawLine(QPointF(x, plotArea.bottom()), QPointF(x, plotArea.bottom() + 4));
-        painter.drawText(QRectF(x - 20, plotArea.bottom() + 4, 40, 16),
+        painter.drawText(QRectF(x - 20, plotArea.bottom() + 4, 80, 16),
                          Qt::AlignHCenter | Qt::AlignTop,
-                         QString::number(t, 'f', 1) + QStringLiteral("s"));
+                         time.toString(DISPLAY_TIME_DURATION_FORMAT));
+
     }
 }
 
@@ -346,6 +354,10 @@ void SignalViewWidget::paintEvent(QPaintEvent *event)
 void SignalViewWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
+    //scrollBar policy
+    m_scrollBar->setOrientation(Qt::Horizontal);
+    m_scrollBar->setGeometry(0, height() - 18, width(), 25);
+
     updateVisibleDuration();
     update();
 }
@@ -409,6 +421,7 @@ void SignalViewWidget::wheelEvent(QWheelEvent *event)
     }
 
     m_timeOffsetSec = qBound(0.0, m_timeOffsetSec, maxTimeOffset());
+    m_scrollBar->setValue(m_timeOffsetSec*m_sampleRate);
     update();
     event->accept();
 }
@@ -433,4 +446,24 @@ void SignalViewWidget::updateVisibleDuration()
 qreal SignalViewWidget::pixelsPerSecond() const {
     // Calculate based on paper speed and pixels per mm
     return m_paperSpeedMmPerSec * m_pixelsPerMm;
+}
+
+void SignalViewWidget::configScrollBar(const  QVector<QVector<qreal>>& leads)
+{
+    int maxSamples = 0;
+    for (const auto &lead : leads)
+        maxSamples = qMax(maxSamples, lead.size());
+    int visibleSamples = static_cast<int>(m_visibleDurationSec * m_sampleRate);
+    m_scrollBar->setMaximum(qMax(0, maxSamples - visibleSamples));
+    m_scrollBar->setRange(0, qMax(0, maxSamples - visibleSamples));
+    m_scrollBar->setPageStep(visibleSamples);
+    m_scrollBar->setSingleStep(m_sampleRate / 10);
+    if(qMax(0, maxSamples - visibleSamples) > 0)
+        m_scrollBar->setVisible(true);
+}
+
+void SignalViewWidget::sltValueChanged(int value)
+{
+    m_timeOffsetSec = value / static_cast<double>(m_sampleRate);
+    update();
 }

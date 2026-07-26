@@ -12,6 +12,7 @@
 #include "Controller/csettings.h"
 #include <QListWidget>
 #include <QTextEdit>
+#include <QListWidgetItem>
 #include <Models/define.h>
 #include <QProgressBar>
 QT_BEGIN_NAMESPACE

@@ -6,6 +6,9 @@
 #include <QVector>
 #include <QColor>
 #include <QStringList>
+#include <QScrollBar>
+#include "Models/define.h"
+
 #define DEBUG_SIGNALVIEW false
 
 class SignalViewWidget : public QWidget
@@ -72,6 +75,11 @@ private:
     QPoint m_lastMousePos;
 
     static const QColor s_leadColors[MaxLeads];
+    QScrollBar *m_scrollBar = nullptr;
+    void configScrollBar(const QVector<QVector<qreal> > &leads);
+
+private Q_SLOTS:
+    void sltValueChanged(int value);
 };
 
 #endif // SIGNALVIEWWIDGET_H
