@@ -40,5 +40,9 @@ void CSignalView::setData(const MIT_BIH_ECGData &data)
         names.append(leadLabelFromIndex(data.selectedLead[i]));
     }
 
-    m_signalViewWidget->setLeads(data.nsigs, names, data.sampling);
+    m_signalViewWidget->setLeads(data.nsigs,
+                                 data.getStartIndex(),
+                                 data.getAnotLable(),
+                                 names,
+                                 data.sampling);
 }

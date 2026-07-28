@@ -82,6 +82,7 @@ void CSV::saveSignal()
     {
         long sampleIndex = (m_csvFormat.sampleIndex.at(i) - minTime);
         // qDebug() << "sav "<< sampleIndex;
+
         out << sampleIndex << ","
             << m_csvFormat.type.at(i) << "\n";
     }
@@ -97,7 +98,6 @@ bool CSV::saveRawCSVRes(const SheetResult &res)
 
     QTextStream out(&file);
     int numAnnotations = res.alignedList1.size(); // Use the final aligned size
-    qDebug() << "Total aligned rows: " << numAnnotations;
 
     for(int i = 0; i < numAnnotations; i++)
     {

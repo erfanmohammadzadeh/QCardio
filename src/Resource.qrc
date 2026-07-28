@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>Res/style/style.qss</file>
         <file>Res/image/icon.ico</file>
+        <file>Res/help/Physionet Help.pdf</file>
     </qresource>
 </RCC>

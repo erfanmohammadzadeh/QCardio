@@ -65,7 +65,9 @@ private slots:
 
     void on_comboBoxDatabaseName_currentTextChanged(const QString &arg1);
 
-    void on_checkBox_checkStateChanged(const Qt::CheckState &arg1);
+    void on_toolButtonClearLogs_clicked();
+
+    void on_toolButtonHelp_clicked();
 
 private:
     Ui::MainWindow *ui;

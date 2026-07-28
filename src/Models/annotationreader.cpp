@@ -66,6 +66,24 @@ const QVector<AnnotationData> &AnnotationReader::getAnnotations() const
     return m_annotations;
 }
 
+const static QSet<QString> noneBeatChar = {
+    "[", "!", "]", "x", "(", ")", "p", "t", "u",
+    "`", "'", "^", "|", "~", "+", "s", "T", "*",
+    "D", "=", "@"
+};
+
+void AnnotationReader::calcNoneBeatIndex(MIT_BIH_ECGData &data)
+{
+    for (int i = m_annotations.size() - 1; i >= 0; --i)
+    {
+        if (noneBeatChar.contains(m_annotations[i].symbol))
+        {
+            for (auto &signal : data.nsigs)
+                if (i < signal.size())
+                    data.noneBeatIndex.append(i);
+        }
+    }
+}
 QVector<RRInterval> AnnotationReader::computeRRIntervals(
     const QVector<AnnotationData> &annotations,
     int samplingRate) {

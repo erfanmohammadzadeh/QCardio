@@ -74,3 +74,6 @@ RESOURCES += \
     Resource.qrc
 
 RC_ICONS = Res/image/icon.ico
+
+DISTFILES += \
+    Res/help/Physionet Help.pdf

@@ -111,27 +111,28 @@ bool Cwfdb::readAnot(const SignalViewParameters &params)
     }
 
     m_strData.anotList = reader->getAnnotations();
-    m_strData.rrIntervals = reader->computeRRIntervals(m_strData.anotList, params.targetFs);
+    reader->calcNoneBeatIndex(m_strData);
+    // m_strData.rrIntervals = reader->computeRRIntervals(m_strData.anotList, params.targetFs);
 
-    if (!m_strData.rrIntervals.isEmpty()) {
-        double meanRR = 0.0;
-        double minRR = m_strData.rrIntervals[0].intervalSeconds;
-        double maxRR = m_strData.rrIntervals[0].intervalSeconds;
+    // if (!m_strData.rrIntervals.isEmpty()) {
+        // double meanRR = 0.0;
+        // double minRR = m_strData.rrIntervals[0].intervalSeconds;
+        // double maxRR = m_strData.rrIntervals[0].intervalSeconds;
 
-        for (const auto& rr : std::as_const(m_strData.rrIntervals)) {
-            meanRR += rr.intervalSeconds;
-            minRR = qMin(minRR, rr.intervalSeconds);
-            maxRR = qMax(maxRR, rr.intervalSeconds);
-        }
-        meanRR /= m_strData.rrIntervals.size();
+        // for (const auto& rr : std::as_const(m_strData.rrIntervals)) {
+        //     meanRR += rr.intervalSeconds;
+        //     minRR = qMin(minRR, rr.intervalSeconds);
+        //     maxRR = qMax(maxRR, rr.intervalSeconds);
+        // }
+        // meanRR /= m_strData.rrIntervals.size();
 #if DEBUG_CWFDB
-        qDebug() << "\nRR Interval Statistics:";
-        qDebug() << QString("  Mean: %1 ms").arg(meanRR * 1000, 0, 'f', 2);
-        qDebug() << QString("  Min: %1 ms").arg(minRR * 1000, 0, 'f', 2);
-        qDebug() << QString("  Max: %1 ms").arg(maxRR * 1000, 0, 'f', 2);
-        qDebug() << QString("  HR: %1 bpm").arg(60.0 / meanRR, 0, 'f', 1);
+        //qDebug() << "\nRR Interval Statistics:";
+        //qDebug() << QString("  Mean: %1 ms").arg(meanRR * 1000, 0, 'f', 2);
+        //qDebug() << QString("  Min: %1 ms").arg(minRR * 1000, 0, 'f', 2);
+        //qDebug() << QString("  Max: %1 ms").arg(maxRR * 1000, 0, 'f', 2);
+        //qDebug() << QString("  HR: %1 bpm").arg(60.0 / meanRR, 0, 'f', 1);
 #endif
-    }
+    // }
     reader->deleteLater();
     return true;
 }

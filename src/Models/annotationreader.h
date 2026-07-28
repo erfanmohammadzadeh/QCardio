@@ -11,6 +11,7 @@ public:
                      const QString& annotatorName = "atr");
     bool loadAnnotations();
     const QVector<AnnotationData>& getAnnotations() const;
+    void calcNoneBeatIndex(MIT_BIH_ECGData& data);
     QVector<RRInterval> computeRRIntervals(const QVector<AnnotationData>& annotations, int samplingRate);
 private:
     QString m_recordName;

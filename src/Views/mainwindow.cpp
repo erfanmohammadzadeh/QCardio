@@ -346,8 +346,28 @@ void MainWindow::on_comboBoxDatabaseName_currentTextChanged(const QString &arg1)
 }
 
 
-void MainWindow::on_checkBox_checkStateChanged(const Qt::CheckState &arg1)
+void MainWindow::on_toolButtonClearLogs_clicked()
 {
-    ui->textEditLogs->setVisible(arg1 == Qt::Checked);
+    ui->textEditLogs->clear();
+}
+
+#include <QDesktopServices>
+void MainWindow::on_toolButtonHelp_clicked()
+{
+    QFile resource(":/Res/help/Physionet Help.pdf");
+
+    if (resource.open(QIODevice::ReadOnly))
+    {
+        QString temp = QDir::tempPath() + "/Physionet Help.pdf";
+
+        QFile out(temp);
+        if (out.open(QIODevice::WriteOnly))
+        {
+            out.write(resource.readAll());
+            out.close();
+
+            QDesktopServices::openUrl(QUrl::fromLocalFile(temp));
+        }
+    }
 }
 

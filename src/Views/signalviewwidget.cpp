@@ -37,12 +37,16 @@ SignalViewWidget::SignalViewWidget(QWidget *parent)
 }
 
 void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
+                                const QVector<int> &startIndexList,
+                                const QStringList& labelList,
                                 const QStringList &names,
                                 int sampleRate,
                                 qreal adcPerMillivolt)
 {
     m_leads.clear();
     m_leadNames.clear();
+    m_beatLableList = labelList;
+    m_startIndexList = startIndexList;
 
     configScrollBar(leads);
 
@@ -308,6 +312,38 @@ void SignalViewWidget::drawLead(QPainter &painter, int leadIndex, const QRectF &
     if (started) {
         painter.drawPath(path);
     }
+
+    /// Draw Label
+    painter.save();
+    painter.setPen(Qt::blue);
+    QFont font = painter.font();
+    font.setPointSize(12);
+    font.setBold(true);
+    painter.setFont(font);
+
+
+    for (int beat = 0; beat < m_startIndexList.size(); ++beat)
+    {
+        int sample = m_startIndexList[beat];
+
+        // Skip beats outside the visible range
+        if (sample < startIndex || sample >= endIndex)
+            continue;
+
+        qreal t = sampleIndexToTime(sample);
+        qreal x = timeToX(t, plotArea);
+
+        QString label;
+        if (beat < m_beatLableList.size())
+            label = m_beatLableList[beat];
+        else
+            label = QString::number(beat + 1);
+
+        painter.drawText(QPointF(x + 2, stripRect.top() + 15), label);
+    }
+
+    painter.restore();
+
 
     drawLeadLabel(painter, leadIndex, stripRect);
 }

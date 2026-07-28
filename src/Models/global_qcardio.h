@@ -64,6 +64,7 @@ struct MIT_BIH_ECGData
     QDateTime recordDate   = QDateTime(QDate(2000,1,1),QTime(0,0,0));
     QVector<AnnotationData> anotList;
     QVector<RRInterval> rrIntervals;
+    QVector<int> noneBeatIndex;
 
     void clear()
     {
@@ -73,18 +74,38 @@ struct MIT_BIH_ECGData
             sig.squeeze();
         }
         nsigs.clear();
+        noneBeatIndex.clear();
     }
-
     CSVFormat toCSVFormat() const
     {
         CSVFormat converted;
-        for(const AnnotationData& anot : this->anotList)
+        for (int i = 0; i < anotList.size(); i++)
         {
-            // qDebug() << "insave: " << anot.time;
-            converted.sampleIndex << anot.time;
-            converted.type << anot.anntyp;
+            if (noneBeatIndex.contains(i))
+                continue;
+
+            converted.sampleIndex << anotList[i].time;
+            converted.type << anotList[i].anntyp;
         }
         return converted;
+    }
+    QStringList getAnotLable() const
+    {
+        QStringList anotLableList;
+        for(const AnnotationData& label : anotList)
+        {
+            anotLableList << label.symbol;
+        }
+        return anotLableList;
+    }
+    QVector<int> getStartIndex() const
+    {
+        QVector<int> startIdxList;
+        for(const AnnotationData& label : anotList)
+        {
+            startIdxList << label.time;
+        }
+        return startIdxList;
     }
 };
 

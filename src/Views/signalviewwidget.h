@@ -21,6 +21,8 @@ public:
     explicit SignalViewWidget(QWidget *parent = nullptr);
 
     void setLeads(const QVector<QVector<qreal>> &leads,
+                  const QVector<int> &startIndexList,
+                  const QStringList& labelList,
                   const QStringList &names,
                   int sampleRate,
                   qreal adcPerMillivolt = 200.0);
@@ -59,6 +61,9 @@ private:
 
 
     QVector<QVector<qreal>> m_leads;
+    QVector<int> m_startIndexList;
+    QStringList m_beatLableList;
+
     QStringList m_leadNames;
     int m_sampleRate = 360;
     qreal m_adcPerMv = 200.0;
