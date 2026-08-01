@@ -8,6 +8,7 @@
 #include <QStringList>
 #include <QScrollBar>
 #include "Models/define.h"
+#include "Models/global_qcardio.h"
 
 #define DEBUG_SIGNALVIEW false
 
@@ -20,12 +21,8 @@ public:
 
     explicit SignalViewWidget(QWidget *parent = nullptr);
 
-    void setLeads(const QVector<QVector<qreal>> &leads,
-                  const QVector<int> &startIndexList,
-                  const QStringList& labelList,
-                  const QStringList &names,
-                  int sampleRate,
-                  qreal adcPerMillivolt = 200.0);
+    void setLeads(const MIT_BIH_ECGData&data,
+                  const QStringList &names);
     void clearLeads();
 
     void setPaperSpeed(qreal mmPerSecond);
@@ -63,6 +60,7 @@ private:
     QVector<QVector<qreal>> m_leads;
     QVector<int> m_startIndexList;
     QStringList m_beatLableList;
+    QStringList m_auxList;
 
     QStringList m_leadNames;
     int m_sampleRate = 360;

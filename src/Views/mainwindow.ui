@@ -172,7 +172,7 @@
          <enum>QTabWidget::TabPosition::West</enum>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <property name="tabBarAutoHide">
          <bool>false</bool>
@@ -596,17 +596,17 @@
           </item>
           <item row="2" column="0" colspan="3">
            <layout class="QGridLayout" name="gridLayout_9">
-            <item row="0" column="0">
-             <widget class="QLabel" name="labelData2">
-              <property name="text">
-               <string>Data 2</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QPushButton" name="pushButtonData2">
               <property name="text">
                <string>Select</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="labelData2">
+              <property name="text">
+               <string>Selected Dataset For Compare</string>
               </property>
              </widget>
             </item>
@@ -620,7 +620,7 @@
             <item row="0" column="0">
              <widget class="QLabel" name="labelData1">
               <property name="text">
-               <string>Data 1</string>
+               <string>Reference Standard Dataset</string>
               </property>
              </widget>
             </item>

@@ -36,17 +36,19 @@ SignalViewWidget::SignalViewWidget(QWidget *parent)
     m_scrollBar->setVisible(false);
 }
 
-void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
-                                const QVector<int> &startIndexList,
-                                const QStringList& labelList,
-                                const QStringList &names,
-                                int sampleRate,
-                                qreal adcPerMillivolt)
+void SignalViewWidget::setLeads(const MIT_BIH_ECGData& data,
+                                const QStringList &names)
 {
+    QVector<QVector<qreal>> leads = data.nsigs;
+    QVector<int> startIndexList = data.getStartIndex();
+    QStringList labelList = data.getAnotLable();
+    int sampleRate = data.sampling;
+
     m_leads.clear();
     m_leadNames.clear();
     m_beatLableList = labelList;
     m_startIndexList = startIndexList;
+    m_auxList = data.getAuxList();
 
     configScrollBar(leads);
 
@@ -64,7 +66,7 @@ void SignalViewWidget::setLeads(const QVector<QVector<qreal>> &leads,
     }
 
     m_sampleRate = qMax(1, sampleRate);
-    m_adcPerMv = qMax<qreal>(1.0, adcPerMillivolt);
+    m_adcPerMv = qMax<qreal>(1.0, data.adcPerMv);
     m_timeOffsetSec = 0.0;
     update();
 }
@@ -340,6 +342,10 @@ void SignalViewWidget::drawLead(QPainter &painter, int leadIndex, const QRectF &
             label = QString::number(beat + 1);
 
         painter.drawText(QPointF(x + 2, stripRect.top() + 15), label);
+        if(label == '"')
+        {
+            painter.drawText(QPointF(x + 2, stripRect.top() + 25), m_auxList[beat]);
+        }
     }
 
     painter.restore();

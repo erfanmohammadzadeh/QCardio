@@ -53,10 +53,14 @@ bool AnnotationReader::loadAnnotations() {
         data.subtype = annot.subtyp;
         data.channel = annot.chan;
         data.number = annot.num;
-        data.aux = (annot.aux != NULL) ? QString::fromLatin1(annot.aux) : "";
+        if (annot.aux) {
+            int len = annot.aux[0];
+            data.aux = QString::fromLatin1(
+                reinterpret_cast<const char*>(annot.aux + 1),
+                len);
+        }
         m_annotations.append(data);
     }
-
     wfdbquit();
     return true;
 }

@@ -65,6 +65,7 @@ struct MIT_BIH_ECGData
     QVector<AnnotationData> anotList;
     QVector<RRInterval> rrIntervals;
     QVector<int> noneBeatIndex;
+    float adcPerMv = 200.0;
 
     void clear()
     {
@@ -106,6 +107,15 @@ struct MIT_BIH_ECGData
             startIdxList << label.time;
         }
         return startIdxList;
+    }
+    QStringList getAuxList() const
+    {
+        QStringList auxList;
+        for(const AnnotationData& label : anotList)
+        {
+            auxList << label.aux;
+        }
+        return auxList;
     }
 };
 
