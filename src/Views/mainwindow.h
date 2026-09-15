@@ -9,7 +9,7 @@
 #include <Views/signalviewwidget.h>
 #include <QFileInfo>
 #include "Models/uiconfigs.h"
-#include "Controller/csettings.h"
+#include "Services/settingsservice.h"
 #include <QListWidget>
 #include <QTextEdit>
 #include <QListWidgetItem>
@@ -35,7 +35,7 @@ public:
     void loadUIConfig(UIConfigs *uiConfig);
     void getUIConfig(UIConfigs &uiConfig);
 
-    void setSetting(CSettings *newSetting);
+    void setSetting(SettingsService *newSetting);
     void addFileToListWidget(QListWidget *widget,
                              QStringList &filePaths,
                              QStringList &fileNames,
@@ -86,7 +86,7 @@ private:
     QStringList m_CSV2FilesWithPath;
     QStringList m_CSV2FilePath;
 
-    CSettings *m_setting;
+    SettingsService *m_setting;
     quint8 m_counterLog = 0;
     QString m_databasePath;
 

@@ -1,14 +1,17 @@
-#include "canalyser.h"
+#include "analyseservice.h"
+#include "Models/csv.h"
 
-#include <QtConcurrent/QtConcurrent>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QDebug>
 
-CAnalyser::CAnalyser(QObject *parent, AnalyseCfg cfg)
+AnalyseService::AnalyseService(QObject *parent, AnalyseCfg cfg)
     : QObject(parent)
     , m_analyseCfg(std::move(cfg))
 {
 }
 
-bool CAnalyser::analyse()
+bool AnalyseService::analyse()
 {
     const int processFile = qMin(m_analyseCfg.csvPath1.size(), m_analyseCfg.csvPath2.size());
     if (processFile == 0) {
@@ -24,20 +27,21 @@ bool CAnalyser::analyse()
         QString base1 = QFileInfo(m_analyseCfg.csvPath1[i]).baseName();
         QString base2 = QFileInfo(m_analyseCfg.csvPath2[i]).baseName();
         QString filename = base1 + "VS" + base2;
+        Q_EMIT sigAppendLog(QString("Comparing %1 (%2/%3)").arg(filename).arg(i + 1).arg(processFile));
         SheetAnalyser analyser(nullptr, pairFile, m_analyseCfg, filename);
         allSucceeded = analyser.processSheets() && allSucceeded;
         fileResultList.append(analyser.fileProcessRes());
+        Q_EMIT sigProgress(i + 1, processFile);
     }
 
-    if(!saveProcessFileResult(fileResultList))
-    {
+    if (!saveProcessFileResult(fileResultList)) {
         QMessageBox::critical(nullptr, "Save Report Err", "Save report result failed.");
     }
 
     return allSucceeded;
 }
 
-bool CAnalyser::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
+bool AnalyseService::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
 {
     QString path = m_analyseCfg.outputPath + "/" + "Report.csv";
     Q_EMIT sigAppendLog("Result Path: " + path);

@@ -1,11 +1,12 @@
-#include "controller.h"
+#include "Controllers/appcontroller.h"
 
 #include <QApplication>
+#include <QIcon>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setWindowIcon(QIcon(":/Res/image/icon.ico"));
-    Controller controller;
+    AppController controller;
     return a.exec();
 }

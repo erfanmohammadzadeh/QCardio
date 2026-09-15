@@ -4,57 +4,56 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++17
 
-# You can make your code fail to compile if it uses deprecated APIs.
-# In order to do so, uncomment the following line.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+INCLUDEPATH += $$PWD $$PWD/ThirdParty
+
 SOURCES += \
-    Controller/canalyser.cpp \
-    Controller/cexporter.cpp \
-    Controller/clog.cpp \
-    Controller/csettings.cpp \
-    Controller/csignalview.cpp \
-    Controller/cwfdb.cpp \
-    Models/annotationreader.cpp \
+    Controllers/appcontroller.cpp \
+    Controllers/signalviewcontroller.cpp \
     Models/beatkpi.cpp \
     Models/csv.cpp \
     Models/directoryvalidator.cpp \
     Models/resultmatrix.cpp \
     Models/sheetanalyser.cpp \
     Models/uiconfigs.cpp \
+    Services/analyseservice.cpp \
+    Services/annotationservice.cpp \
+    Services/exportservice.cpp \
+    Services/logservice.cpp \
+    Services/settingsservice.cpp \
+    Services/wfdbservice.cpp \
     Views/signalviewwidget.cpp \
-    controller.cpp \
-    main.cpp \
     Views/mainwindow.cpp \
-    wfdb/annot.c \
-    wfdb/calib.c \
-    wfdb/signal.c \
-    wfdb/wfdbinit.c \
-    wfdb/wfdbio.c
+    main.cpp \
+    ThirdParty/wfdb/annot.c \
+    ThirdParty/wfdb/calib.c \
+    ThirdParty/wfdb/signal.c \
+    ThirdParty/wfdb/wfdbinit.c \
+    ThirdParty/wfdb/wfdbio.c
 
 HEADERS += \
-    Controller/canalyser.h \
-    Controller/cexporter.h \
-    Controller/clog.h \
-    Controller/csettings.h \
-    Controller/csignalview.h \
-    Controller/cwfdb.h \
-    Models/annotationreader.h \
+    Controllers/appcontroller.h \
+    Controllers/signalviewcontroller.h \
     Models/beatkpi.h \
     Models/csv.h \
     Models/define.h \
     Models/directoryvalidator.h \
+    Models/global_qcardio.h \
     Models/resultmatrix.h \
     Models/sample.h \
     Models/sheetanalyser.h \
     Models/uiconfigs.h \
+    Services/analyseservice.h \
+    Services/annotationservice.h \
+    Services/exportservice.h \
+    Services/logservice.h \
+    Services/settingsservice.h \
+    Services/wfdbservice.h \
     Views/signalviewwidget.h \
-    controller.h \
-    Models/global_qcardio.h \
     Views/mainwindow.h \
-    wfdb/ecgcodes.h \
-    wfdb/ecgmap.h \
-    wfdb/wfdb.h \
-    wfdb/wfdblib.h
+    ThirdParty/wfdb/ecgcodes.h \
+    ThirdParty/wfdb/ecgmap.h \
+    ThirdParty/wfdb/wfdb.h \
+    ThirdParty/wfdb/wfdblib.h
 
 FORMS += \
     Views/mainwindow.ui

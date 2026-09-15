@@ -1,28 +1,33 @@
-#include "annotationreader.h"
+#include "annotationservice.h"
 
-AnnotationReader::AnnotationReader(QObject* parent,
-                                   const SignalViewParameters &signalParam,
-                                   const QString &annotatorName) :
-    QObject(parent),m_databaseName(signalParam.dbPath), m_recordName(signalParam.signalFilePath), m_annotatorName(annotatorName)
+#include <QSet>
+
+AnnotationService::AnnotationService(QObject* parent,
+                                     const SignalViewParameters &signalParam,
+                                     const QString &annotatorName)
+    : QObject(parent)
+    , m_databaseName(signalParam.dbPath)
+    , m_recordName(signalParam.signalFilePath)
+    , m_annotatorName(annotatorName)
 {
     setwfdb(const_cast<char*>(signalParam.dbPath.toStdString().c_str()));
 }
 
-bool AnnotationReader::loadAnnotations() {
-    Q_EMIT sigAppnedLog("Record Atribute: " + m_recordName);
+bool AnnotationService::loadAnnotations()
+{
+    Q_EMIT sigAppendLog("Record Atribute: " + m_recordName);
     m_annotatorName = "atr";
 
     QByteArray recordBA = m_recordName.toLatin1();
     QByteArray annotatorBA = m_annotatorName.toLatin1();
 
-    // 1. Read the sampling frequency first using the record name
     double freq = sampfreq((char*)recordBA.constData());
     if (freq < 0) {
-        m_originalFrequency = m_sourceFreq; // MIT-BIH Arrhythmia Database default
-        Q_EMIT sigAppnedLog("Could not read sampling frequency for" + m_recordName + QString(". Defaulting to %1 Hz.").arg(m_sourceFreq));
+        m_originalFrequency = m_sourceFreq;
+        Q_EMIT sigAppendLog("Could not read sampling frequency for" + m_recordName + QString(". Defaulting to %1 Hz.").arg(m_sourceFreq));
     } else {
         m_originalFrequency = freq;
-        Q_EMIT sigAppnedLog(QString("Original Frequency %1Hz").arg(m_originalFrequency));
+        Q_EMIT sigAppendLog(QString("Original Frequency %1Hz").arg(m_originalFrequency));
     }
 
     WFDB_Anninfo annInfo;
@@ -30,16 +35,14 @@ bool AnnotationReader::loadAnnotations() {
     annInfo.stat = WFDB_READ;
 
     if (annopen((char*)recordBA.constData(), &annInfo, 1) < 0) {
-        Q_EMIT sigAppnedLog( "Failed to open annotations for" + m_recordName);
+        Q_EMIT sigAppendLog("Failed to open annotations for" + m_recordName);
         return false;
     }
 
     m_annotations.clear();
     WFDB_Annotation annot;
 
-    // 2. Strict == 0 check to prevent parsing junk data at EOF
     while (getann(0, &annot) == 0) {
-        // Double check against corrupted/negative time tokens
         if (annot.time < 0) {
             continue;
         }
@@ -65,7 +68,7 @@ bool AnnotationReader::loadAnnotations() {
     return true;
 }
 
-const QVector<AnnotationData> &AnnotationReader::getAnnotations() const
+const QVector<AnnotationData> &AnnotationService::getAnnotations() const
 {
     return m_annotations;
 }
@@ -76,39 +79,35 @@ const static QSet<QString> noneBeatChar = {
     "D", "=", "@"
 };
 
-void AnnotationReader::calcNoneBeatIndex(MIT_BIH_ECGData &data)
+void AnnotationService::calcNoneBeatIndex(MIT_BIH_ECGData &data)
 {
-    for (int i = m_annotations.size() - 1; i >= 0; --i)
-    {
-        if (noneBeatChar.contains(m_annotations[i].symbol))
-        {
+    for (int i = m_annotations.size() - 1; i >= 0; --i) {
+        if (noneBeatChar.contains(m_annotations[i].symbol)) {
             for (auto &signal : data.nsigs)
                 if (i < signal.size())
                     data.noneBeatIndex.append(i);
         }
     }
 }
-QVector<RRInterval> AnnotationReader::computeRRIntervals(
-    const QVector<AnnotationData> &annotations,
-    int samplingRate) {
 
+QVector<RRInterval> AnnotationService::computeRRIntervals(
+    const QVector<AnnotationData> &annotations,
+    int samplingRate)
+{
     QVector<RRInterval> rrIntervals;
     QVector<AnnotationData> qrsBeats;
 
-    // Extract QRS annotations - FIXED: use anntyp, not number
     for (const auto& ann : annotations)
         if (wfdb_isqrs(ann.anntyp))
             qrsBeats.append(ann);
 
-    Q_EMIT sigAppnedLog(QString("%1 QRS index Found").arg(qrsBeats.size()));
-
+    Q_EMIT sigAppendLog(QString("%1 QRS index Found").arg(qrsBeats.size()));
 
     if (qrsBeats.size() < 2) {
-        Q_EMIT sigAppnedLog( "Not enough QRS beats to compute RR intervals");
+        Q_EMIT sigAppendLog("Not enough QRS beats to compute RR intervals");
         return rrIntervals;
     }
 
-    // Compute intervals between consecutive beats
     for (int i = 1; i < qrsBeats.size(); i++) {
         RRInterval rr;
         rr.time1 = qrsBeats[i-1].time;
@@ -118,6 +117,6 @@ QVector<RRInterval> AnnotationReader::computeRRIntervals(
         rrIntervals.append(rr);
     }
 
-    Q_EMIT sigAppnedLog(QString("%1 RR intervals computed").arg(rrIntervals.size()));
+    Q_EMIT sigAppendLog(QString("%1 RR intervals computed").arg(rrIntervals.size()));
     return rrIntervals;
 }

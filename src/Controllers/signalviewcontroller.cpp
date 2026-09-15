@@ -1,4 +1,4 @@
-#include "csignalview.h"
+#include "signalviewcontroller.h"
 
 namespace {
 const char *kLeadNames[] = {"I", "II", "V", "None"};
@@ -12,22 +12,22 @@ QString leadLabelFromIndex(int index)
 }
 }
 
-CSignalView::CSignalView(QWidget *parent)
+SignalViewController::SignalViewController(QWidget *parent)
     : QWidget(parent)
     , m_signalViewWidget(new SignalViewWidget(this))
 {
 }
 
-CSignalView::~CSignalView()
+SignalViewController::~SignalViewController()
 {
 }
 
-SignalViewWidget *CSignalView::signalWidget() const
+SignalViewWidget *SignalViewController::signalWidget() const
 {
     return m_signalViewWidget;
 }
 
-void CSignalView::setData(const MIT_BIH_ECGData &data)
+void SignalViewController::setData(const MIT_BIH_ECGData &data)
 {
     if (data.nsigs.isEmpty()) {
         m_signalViewWidget->clearLeads();

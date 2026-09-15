@@ -97,7 +97,7 @@ bool MainWindow::readSignalSetting(SignalViewParameters& params)
     return true;
 }
 
-void MainWindow::setSetting(CSettings *newSetting)
+void MainWindow::setSetting(SettingsService *newSetting)
 {
     m_setting = newSetting;
 }
@@ -179,6 +179,7 @@ void MainWindow::enableUIBtn(const bool& isEnable)
 {
     ui->pushButtonExport->setEnabled(isEnable);
     ui->pushButtonRead->setEnabled(isEnable);
+    ui->pushButtonCompare->setEnabled(isEnable);
 }
 
 void MainWindow::loadUIConfig(UIConfigs *uiConfig)
@@ -335,6 +336,7 @@ void MainWindow::on_pushButtonCompare_clicked()
     analyseCfg.csvPath2 = m_CSV2FilePath;
     analyseCfg.outputPath = path;
     analyseCfg.sampleRate = ui->spinBoxTargetFreq->value();
+    enableUIBtn(false);
     Q_EMIT sigAnalyseRequested(analyseCfg);
 }
 

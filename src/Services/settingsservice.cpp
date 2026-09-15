@@ -1,11 +1,12 @@
-#include "csettings.h"
+#include "settingsservice.h"
 
-CSettings::CSettings(QObject *parent)
-    : QObject{parent} ,m_setting("ErfanMohammadzade", "QCardio")
+SettingsService::SettingsService(QObject *parent)
+    : QObject{parent}
+    , m_setting("ErfanMohammadzade", "QCardio")
 {
 }
 
-void CSettings::saveSetting(const UIConfigs &uiConfig)
+void SettingsService::saveSetting(const UIConfigs &uiConfig)
 {
     m_setting.setValue("UI/DBPath", uiConfig.dataBasePath());
     m_setting.setValue("UI/DBName", uiConfig.dataBaseName());
@@ -21,7 +22,7 @@ void CSettings::saveSetting(const UIConfigs &uiConfig)
     m_setting.sync();
 }
 
-void CSettings::loadSetting(UIConfigs *uiConfig)
+void SettingsService::loadSetting(UIConfigs *uiConfig)
 {
     uiConfig->setDataBasePath(m_setting.value("UI/DBPath").toString());
     uiConfig->setDataBaseName(m_setting.value("UI/DBName").toString());

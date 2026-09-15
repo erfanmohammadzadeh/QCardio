@@ -10,7 +10,9 @@ This document explains how to convert the AHA (American Heart Association) datab
 
 Download and install the WFDB Software Package from the official PhysioNet repository:
 
-> **Source:** [WFDP_Software - PhysioNet](https://www.physionet.org/content/wfdb/10.7.0/)
+> **Source:** [WFDB Software - PhysioNet](https://www.physionet.org/content/wfdb/10.7.0/)
+
+QCardio itself already vendors WFDB under `src/ThirdParty/wfdb/` for reading records in the app. The **command-line** WFDB tools from PhysioNet are still required for this conversion script.
 
 Follow the installation instructions for your operating system (Linux, macOS, or Windows).
 

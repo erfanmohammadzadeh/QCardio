@@ -1,10 +1,16 @@
-#include "cexporter.h"
+#include "exportservice.h"
+#include "Models/csv.h"
 
-CExporter::CExporter(QObject *parent)
+#include <QDir>
+#include <QFile>
+#include <QDataStream>
+#include <QDebug>
+
+ExportService::ExportService(QObject *parent)
     : QObject{parent}
 {}
 
-void CExporter::exportData(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
+void ExportService::exportData(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
 {
     if(exportSetting.method == ExprotSetting::ExportMethod::RC7)
         exportDataInRC7(data, exportSetting);
@@ -13,7 +19,7 @@ void CExporter::exportData(const MIT_BIH_ECGData &data, const ExprotSetting &exp
     Q_EMIT sigExportProcessEnd();
 }
 
-void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSetting& exportSetting)
+void ExportService::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSetting& exportSetting)
 {
     // Validate input
     if (data.totalSample <= 0 || data.nsigs.isEmpty()) {
@@ -88,7 +94,7 @@ void CExporter::exportDataInSample(const MIT_BIH_ECGData &data, const ExprotSett
     file.close();
 }
 
-bool CExporter::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
+bool ExportService::exportDataInRC7(const MIT_BIH_ECGData &data, const ExprotSetting &exportSetting)
 {
     if (data.nsigs.isEmpty()) {
         Q_EMIT sigAppendLog("No sample data to save");

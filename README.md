@@ -1,58 +1,74 @@
-# ECG Processing Library Validation Framework
+# QCardio
 
-This project provides a comprehensive validation framework for ECG processing libraries and algorithms. The core requirement is that any ECG software must produce correct outputs when tested against physician-annotated signals from the MIT-BIH Arrhythmia Database.
+Qt desktop app for viewing PhysioNet WFDB ECG records, exporting them, and comparing algorithm CSV output against a reference annotation set (MIT-BIH, AHA, and similar PhysioNet-style databases).
 
-## Overview
+## Features
 
-The framework transforms the MIT-BIH Arrhythmia Database into a structured, easy-to-use format suitable for automated testing and validation of ECG processing algorithms. It provides tools for:
+- Read WFDB records (`.hea` / `.dat`) and beat annotations (`.atr`)
+- Plot up to three leads with annotation labels
+- Resample to a target frequency, with gain and offset
+- Export a single record or the full list as RC7 or raw samples (optional CSV)
+- Compare two CSV directories and write `Report.csv`
+- Footer progress bar for **export-all** and **compare** (`Compare current/total`)
 
-- **Data Conversion**: Convert MIT-BIH records to structured CSV format
-- **Algorithm Validation**: Compare your algorithm's output against reference annotations
-- **Performance Metrics**: Calculate comprehensive metrics including TP, FP, FN, Precision, Recall, F1-Score, and Accuracy
-- **Data Resampling**: Resample ECG signals to any desired sampling rate
-- **Report Generation**: Export detailed validation reports in multiple formats
+## Architecture
 
-## Key Features
+Application code lives under `src/` in a standard MVC + service layout. The PhysioNet WFDB C library is not mixed with app modules; it is vendored under `src/ThirdParty/wfdb/`.
 
-### 1. Data Management
+```
+src/
+  main.cpp
+  QCardio.pro
+  Controllers/     AppController, SignalViewController
+  Views/           MainWindow, SignalViewWidget
+  Models/          ECG/CSV types, sheet analysis, settings DTO
+  Services/        WFDB, annotation, export, analyse, settings, log
+  ThirdParty/wfdb/ PhysioNet WFDB C sources
+```
 
-- Automatic download and conversion of MIT-BIH database
-- Customizable data structure for easy integration
-- Support for multiple ECG leads (MLII, V5)
-- Annotation preservation and conversion
+| Layer | Responsibility |
+|---|---|
+| **Views** | UI only. Emits requests (read, export, compare). |
+| **Controllers** | Wire views to services. `AppController` owns the main window and runs background jobs. |
+| **Services** | I/O and business logic (`WfdbService`, `AnnotationService`, `ExportService`, `AnalyseService`, `SettingsService`, `LogService`). |
+| **Models** | Data structures (`MIT_BIH_ECGData`, `AnalyseCfg`, …) and sheet/KPI helpers. |
+| **ThirdParty** | Unmodified WFDB C library used by `WfdbService` / `AnnotationService`. |
 
-### 2. Signal Processing
+Flow: **View** → **AppController** → **Service** → **Model**; results go back to the view (plot, log, progress bar).
 
-- Resample ECG signals to arbitrary sampling rates
-- Filter and preprocess signals
-- Extract specific record segments
-- View and analyze raw signals
+## Build
 
-### 3. Validation Engine
+- Qt 6.8 (Widgets + Concurrent) and a C++17 compiler (MinGW 64-bit is used in the current kit)
+- libcurl (Windows path in `QCardio.pro`: `C:/curl-8.20.0_5`)
 
-- Compare algorithm outputs with reference annotations
-- Calculate comprehensive metrics:
-  - True Positives (TP)
-  - False Positives (FP)
-  - False Negatives (FN)
-  - Precision
-  - Recall/Sensitivity
-  - F1-Score
-  - Accuracy
-  - Positive Predictive Value (PPV)
-- Multi-beat type classification support
-
-### 4. Reporting
-
-- Export results to CSV format
-- Generate detailed validation reports
-- Visual comparison of results
-- Statistical analysis of performance
-
-## Installation
+Open `src/QCardio.pro` in Qt Creator and build, or from a kit that already has `qmake` and the compiler on `PATH`:
 
 ```bash
-# Clone the repository
-git clone https://github.com/erfan-mohammadzade/QCardio.git
-cd QCardio
+cd src
+qmake QCardio.pro
+make
 ```
+
+## Usage
+
+### View and export records
+
+1. Set the database directory (folder that contains `.hea` files).
+2. Select a record and click **Read**.
+3. Choose RC7 or raw sample, output folder, and **Export** (or export all).
+
+See also [sample/README.md](sample/README.md).
+
+### Compare CSV outputs
+
+1. Open the compare tab.
+2. **Select** the reference CSV directory (Data 1) and the algorithm CSV directory (Data 2). Both must contain the same number of files.
+3. Click **Compare** and choose the result directory.
+4. The footer bar shows `Compare n/m` while each pair is processed. Read / Export / Compare stay disabled until the job finishes.
+5. `Report.csv` is written in the result directory.
+
+AHA records can be converted to WFDB first; see [scripts/README.md](scripts/README.md).
+
+## License / data
+
+MIT-BIH and other PhysioNet databases are used under their own terms. WFDB is the PhysioNet WFDB Software Package (see [PhysioNet WFDB](https://www.physionet.org/content/wfdb/10.7.0/)).

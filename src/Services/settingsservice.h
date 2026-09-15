@@ -1,20 +1,19 @@
-#ifndef CSETTINGS_H
-#define CSETTINGS_H
+#ifndef SETTINGSSERVICE_H
+#define SETTINGSSERVICE_H
 
 #include <QObject>
 #include <QSettings>
 #include "Models/uiconfigs.h"
-class CSettings : public QObject
+
+class SettingsService : public QObject
 {
     Q_OBJECT
 public:
-    explicit CSettings(QObject *parent = nullptr);
+    explicit SettingsService(QObject *parent = nullptr);
     void saveSetting(const UIConfigs& uiConfig);
     void loadSetting(UIConfigs *uiConfig);
 
     QSettings m_setting;
-
-signals:
 };
 
-#endif // CSETTINGS_H
+#endif // SETTINGSSERVICE_H
