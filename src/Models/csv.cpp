@@ -120,49 +120,194 @@ bool CSV::saveRawCSVRes(const SheetResult &res)
 
 bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
 {
-    QFile file(m_filename);
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    QFile file201_103(m_filename);
+    if (!file201_103.open(QIODevice::WriteOnly | QIODevice::Text))
         return false;
 
-    QTextStream out(&file);
-    out << "FileName,QRS_TP,QRS_FP,QRS_FN,QRS_Se,QRS_P+,QRS_Accuracy,"
-           "Normal_TP,Normal_FP,Normal_FN,Normal_Se,Normal_P+,Normal_Accuracy,"
-           "PVC_TP,PVC_FP,PVC_FN,PVC_Se,PVC_P+,PVC_Accuracy\n";
+    QTextStream out103(&file201_103);
+    out103 << "FileName,"
+              "Nn,"
+              "Vn,"
+              "On,"
+              "Nv,"
+              "Vv,"
+              "Ov,"
+              "Q Se,"
+              "Q+P,"
+              "N Se,"
+              "N+P,"
+              "V Se,"
+              "V+P,"
+              "VTN,"
+              "V FPR"
+              "\n";
 
     for (const FileProcessResult &res : fileProcessRes)
     {
-        out << res.fileName << ","
-            << res.qrsPredict.tp << ","
-            << res.qrsPredict.fp << ","
-            << res.qrsPredict.fn << ","
-            << res.qrsPredict.se << ","
-            << res.qrsPredict.p << ","
-            << res.qrsPredict.accuracy << ","
-            << res.normalPredict.tp << ","
-            << res.normalPredict.fp << ","
-            << res.normalPredict.fn << ","
-            << res.normalPredict.se << ","
-            << res.normalPredict.p << ","
-            << res.normalPredict.accuracy << ","
-            << res.pvcPredict.tp << ","
-            << res.pvcPredict.fp << ","
-            << res.pvcPredict.fn << ","
-            << res.pvcPredict.se << ","
-            << res.pvcPredict.p << ","
-            << res.pvcPredict.accuracy << ","
-            << "\n";
+        out103 << res.fileName << ","
+               << res.beatTypeMap[ArrhythmiaType::NormalArr][ArrhythmiaType::NormalArr]           << ","
+               << res.beatTypeMap[ArrhythmiaType::VentricularArr][ArrhythmiaType::NormalArr]      << ","
+               << res.beatTypeMap[ArrhythmiaType::UnknownArr][ArrhythmiaType::NormalArr]          << ","
+               << res.beatTypeMap[ArrhythmiaType::NormalArr][ArrhythmiaType::VentricularArr]      << ","
+               << res.beatTypeMap[ArrhythmiaType::VentricularArr][ArrhythmiaType::VentricularArr] << ","
+               << res.beatTypeMap[ArrhythmiaType::UnknownArr][ArrhythmiaType::VentricularArr]     << ","
+               << res.qrsPredict.se    << ","
+               << res.qrsPredict.p     << ","
+               << res.normalPredict.se << ","
+               << res.normalPredict.p  << ","
+               << res.pvcPredict.se    << ","
+               << res.pvcPredict.p     << ","
+               << res.pvcPredict.tn    << ","
+               << res.pvcPredict.fpr   <<
+            "\n";
 
-        // Check for write errors
-        if (out.status() != QTextStream::Ok)
+        if (out103.status() != QTextStream::Ok)
         {
-            file.close();
+            file201_103.close();
             return false;
         }
     }
+    file201_103.close();
 
-    file.close();
+    //////////////////////////////////////
+    QFile file201_104a(m_filename + "a.csv");
+    if (!file201_104a.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out104a(&file201_104a);
+    out104a << "FileName,"
+               "Nx,"
+               "Vx,"
+               "Qx,"
+               "beats missed,"
+               "%N missed,"
+               "%V missed,"
+               "total shudown time"
+               "\n";
+
+    auto pct = [](int part, int total) -> QString {
+        if (total <= 0) return QString("0.00");
+        return QString::number(100.0 * part / total, 'f', 2);
+    };
+
+    for (const FileProcessResult &res : fileProcessRes)
+    {
+
+        out104a << res.fileName                                                          << ","
+                << res.beatTypeMap[ArrhythmiaType::NormalArr][ArrhythmiaType::UnknownArr]      << ","
+                << res.beatTypeMap[ArrhythmiaType::VentricularArr][ArrhythmiaType::UnknownArr] << ","
+                << res.beatTypeMap[ArrhythmiaType::UnknownArr][ArrhythmiaType::UnknownArr]     << ","
+                << res.missedBeatCount                                                   << ","
+                << pct(res.normalMissed, res.missedBeatCount)                            << ","
+                << pct(res.pvcMissed,    res.missedBeatCount)                            << ","
+                << res.totalShutdown.toString("hh:mm:ss")
+                << "\n";
+
+        if (out104a.status() != QTextStream::Ok)
+        {
+            file201_104a.close();
+            return false;
+        }
+    }
+    file201_104a.close();
+
+    /////////////////////////////////
+    QFile file201_104b(m_filename + "b.csv");
+    if (!file201_104b.open(QIODevice::WriteOnly | QIODevice::Text))
+        return false;
+
+    QTextStream out104b(&file201_104b);  // FIXED: was pointing to file201_103
+    out104b << "FileName,"
+               "N_TP(%),"
+               "V_TP(%),"  // FIXED: was "%," without proper label
+               "Q_TP(%),"
+               "N_FN(%),"
+               "V_FN(%),"
+               "Q_FN(%),"
+               "N_FP(%),"  // FIXED: added comma
+               "V_FP(%),"
+               "Q_FP(%),"
+               "N_TN(%),"
+               "V_TN(%),"
+               "Q_TN(%)"
+               "\n"; // FIXED: added comma and newline
+
+    for (const FileProcessResult &res : fileProcessRes)
+    {
+        out104b << res.fileName        << ","
+                << QString("%1 (%2)").arg(res.normalPredict.tp).arg(res.normalPredict.rtp, 0, 'f', 2)    << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.tp   ).arg(res.pvcPredict.rtp, 0, 'f', 2)       << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.tp   ).arg(res.qrsPredict.rtp, 0, 'f', 2)       << ","
+                << QString("%1 (%2)").arg(res.normalPredict.fn).arg(res.normalPredict.rfn, 0, 'f', 2)    << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.fn   ).arg(res.pvcPredict.rfn, 0, 'f', 2)       << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.fn   ).arg(res.normalPredict.rfn, 0, 'f', 2)    << ","
+                << QString("%1 (%2)").arg(res.normalPredict.fp).arg(res.normalPredict.rfp, 0, 'f', 2)    << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.fp   ).arg(res.pvcPredict.rfp, 0, 'f', 2)       << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.fp   ).arg(res.qrsPredict.rfp, 0, 'f', 2)       << ","
+                << QString("%1 (%2)").arg(res.normalPredict.tn).arg(res.normalPredict.rtn, 0, 'f', 2)    << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.tn   ).arg(res.pvcPredict.rtn, 0, 'f', 2)       << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.tn   ).arg(res.qrsPredict.rtn, 0, 'f', 2)
+                << "\n";  // FIXED: was "/n"
+
+        if (out104b.status() != QTextStream::Ok)
+        {
+            file201_104b.close();
+            return false;
+        }
+    }
+    file201_104b.close();
+
+    /////////////////////////////////
+    // QFile file201_104c(m_filename + "c.csv");
+    // if (!file201_104c.open(QIODevice::WriteOnly | QIODevice::Text))
+    //     return false;
+
+    // QTextStream out104c(&file201_104c);
+    // out104c << "FileName,"
+    //            "%V_couplet_se,"
+    //            "%V_couplet_+P,"
+    //            "%V_short run_se,"
+    //            "%V_short run_+P,"
+    //            "%V_long run_se,"
+    //            "%V_long run_+P,"
+    //            "%S_couplet_se,"
+    //            "%S_couplet_+P,"
+    //            "%S_short run_se,"
+    //            "%S_short run_+P,"
+    //            "%S_long run_se,"
+    //            "%S_long run_+P,"
+    //            "%AF duration_se,"
+    //            "%AF duration_+P\n";
+
+    // for (const FileProcessResult &res : fileProcessRes)
+    // {
+    //     out104c << res.fileName << ","
+    //             << res.pvc_couplet.se  << ","
+    //             << res.pvc_couplet.p   << ","
+    //             << res.pvc_shortRun.se << ","
+    //             << res.pvc_shortRun.p  << ","
+    //             << res.pvc_longRun.se  << ","
+    //             << res.pvc_longRun.p   << ","
+    //             << res.svt_couplet.se  << ","
+    //             << res.svt_couplet.p   << ","
+    //             << res.svt_shortRun.se << ","
+    //             << res.svt_shortRun.p  << ","
+    //             << res.svt_longRun.se  << ","
+    //             << res.svt_longRun.p   << ","
+    //             << res.AF_duration.se  << ","
+    //             << res.AF_duration.p   << "\n";
+
+    //     if (out104c.status() != QTextStream::Ok)
+    //     {
+    //         file201_104c.close();
+    //         return false;
+    //     }
+    // }
+    // file201_104c.close();
+
     return true;
 }
+
 QString CSV::getFilename() const
 {
     return m_filename;

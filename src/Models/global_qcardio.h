@@ -1,6 +1,7 @@
 #ifndef GLOBAL_QCARDIO_H
 #define GLOBAL_QCARDIO_H
 
+#include "wfdb/ecgcodes.h"
 #include <QString>
 #include <QDir>
 #include <QMessageBox>
@@ -17,6 +18,7 @@ enum DirectoryValidationFlags {
     NotEmpty = 0x20,
     IsAbsolute = 0x40
 };
+
 
 struct AnnotationData {
     long time;           // Sample index
@@ -197,57 +199,169 @@ struct AnalyseCfg
     QStringList csvPath1;
     QStringList csvPath2;
     QString outputPath;
+    int sampleRate = 178;
 };
 
 struct Predicting
 {
-    int   fn = 0; // False Negatives (we did not detect)
-    int   fp = 0; // False Positives (we detect more)
-    int   tp = 0; // True Positives (detect true)
-    float se = 0.0;
-    float p = 0.0;
-    float accuracy = 0.0;
+    int   fn = 0;
+    int   fp = 0;
+    int   tp = 0;
+    int   tn = 0;
+
+    float rfn = 0.0f;
+    float rfp = 0.0f;
+    float rtp = 0.0f;
+    float rtn = 0.0f;
+
+    float se  = 0.0f;
+    float p   = 0.0f;
+    float fpr = 0.0f;
 
     void calcParams()
     {
-        int total = this->tp + this->fp + this->fn;
-        if (total == 0) {
-            this->se = 0.0;
-            this->p = 0.0;
-            this->accuracy = 0.0;
-            return;
-        }
+        const int actualPos    = tp + fn;
+        const int actualNeg    = tn + fp;
+        const int predictedPos = tp + fp;
+        const int N_total = tp + tn + fp + fn;
 
-        this->se = (static_cast<float>(this->tp) / (this->tp + this->fn)) * 100;
-        this->p  = (static_cast<float>(this->tp) / (this->tp + this->fp)) * 100;
-        this->accuracy = (static_cast<float>(this->tp) / total) * 100;
+        se  = (actualPos    > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos)    : 0.0f;
+        p   = (predictedPos > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(predictedPos) : 0.0f;
+        fpr = (actualNeg    > 0) ? 100.0f * static_cast<float>(fp) / static_cast<float>(actualNeg)    : 0.0f;
+
+        rfn = 100.0f * static_cast<float>(fn) / static_cast<float>(actualPos);
+        rfp = 100.0f * static_cast<float>(fp) / static_cast<float>(actualNeg);
+        rtp = 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos);
+        rtn = 100.0f * static_cast<float>(tn) / static_cast<float>(actualNeg);
     }
-
     void clear()
     {
-        this->fn = 0;
-        this->fp = 0;
-        this->tp = 0;
-        this->se = 0.0;
-        this->p = 0.0;
-        this->accuracy = 0.0;
+        fn = 0;
+        fp = 0;
+        tp = 0;
+        tn = 0;
+        rfn = 0.0f;
+        rfp = 0.0f;
+        rtp = 0.0f;
+        rtn = 0.0f;
+        se  = 0.0f;
+        p   = 0.0f;
+        fpr = 0.0f;
     }
 };
+
+enum ArrhythmiaType
+{
+    NormalArr            = 1 ,
+    SupraventricularArr  = 2 ,
+    BundleBranchBlockArr = 3 ,
+    AberrantArr          = 4 ,
+    AtrialFibrillation   = 5 ,
+    VentricularArr       = 6 ,
+    RonTArr              = 7 ,
+    InterpolatedArr      = 8 ,
+    VentricularEscapeArr = 9 ,
+    FusionArr            = 10 ,
+    UnknownArr           = 11,
+    Paced                = 12,
+    ArrhythmiaTypeCount  = 13,
+};
+
+typedef quint32 BeatMatrixType[ArrhythmiaType::ArrhythmiaTypeCount][ArrhythmiaType::ArrhythmiaTypeCount];
+typedef quint32 RunMatrixType[6][6];
+
 struct FileProcessResult
 {
     QString fileName;
     Predicting qrsPredict;
     Predicting normalPredict;
     Predicting pvcPredict;
+    Predicting svtPredict;
+    Predicting AFPredict;
+    Predicting pvc_couplet;
+    Predicting pvc_shortRun;
+    Predicting pvc_longRun;
+    Predicting svt_couplet;
+    Predicting svt_shortRun;
+    Predicting svt_longRun;
+    Predicting AF_duration;
+    int   missedBeatCount = 0;
+    float normalMissed = 0.0;
+    float pvcMissed = 0.0;
+    quint32 totalShutdownSqrs = 0;
+    QTime totalShutdown;
+    BeatMatrixType beatTypeMap = {{0}};
 
     void clear()
     {
         qrsPredict.clear();
         normalPredict.clear();
         pvcPredict.clear();
+        // svtPredict.clear();
+        AFPredict.clear();
+        pvc_couplet.clear();
+        pvc_shortRun.clear();
+        pvc_longRun.clear();
+        svt_couplet.clear();
+        svt_shortRun.clear();
+        svt_longRun.clear();
+        AF_duration.clear();
+        missedBeatCount = 0;
+        normalMissed = 0.0;
+        pvcMissed = 0.0;
+        totalShutdownSqrs=0;
     }
 };
 
 const static QStringList datasetName = {"MIT-BIH", "AHA", "ESC", "CU"};
+
+enum MatrixType
+{
+    BeatType,
+    RunEpisode
+};
+
+static ArrhythmiaType convertTypeToArrhythmia(int index)
+{
+    switch (index)
+    {
+    case NORMAL:
+        return ArrhythmiaType::NormalArr;
+        break;
+    case BBB:
+        return ArrhythmiaType::BundleBranchBlockArr;
+        break;
+    case ABERR:
+        return ArrhythmiaType::AberrantArr;
+        break;
+    case PVC:
+        return ArrhythmiaType::VentricularArr;
+        break;
+    case FUSION:
+        return ArrhythmiaType::FusionArr;
+        break;
+    case SVPB:
+        return ArrhythmiaType::SupraventricularArr;
+        break;
+    case VESC:
+        return ArrhythmiaType::VentricularEscapeArr;
+        break;
+    case PACE:
+        return ArrhythmiaType::Paced;
+        break;
+    case RONT:
+        return ArrhythmiaType::RonTArr;
+        break;
+    default:
+        return ArrhythmiaType::UnknownArr;
+        break;
+    }
+}
+
+static const QSet<int> NormalBeat = {NORMAL, LBBB, RBBB, BBB, SVPB, PFUS, RHYTHM};
+static const QSet<int> PVCBeat    = {PVC, FUSION, PACE, PFUS, FLWAV, VESC, RHYTHM};
+static const QSet<int> NOISEBeat  = {NOISE, UNKNOWN};
+
+
 
 #endif // GLOBAL_QCARDIO_H

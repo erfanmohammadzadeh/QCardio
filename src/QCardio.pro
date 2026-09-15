@@ -15,8 +15,10 @@ SOURCES += \
     Controller/csignalview.cpp \
     Controller/cwfdb.cpp \
     Models/annotationreader.cpp \
+    Models/beatkpi.cpp \
     Models/csv.cpp \
     Models/directoryvalidator.cpp \
+    Models/resultmatrix.cpp \
     Models/sheetanalyser.cpp \
     Models/uiconfigs.cpp \
     Views/signalviewwidget.cpp \
@@ -37,9 +39,11 @@ HEADERS += \
     Controller/csignalview.h \
     Controller/cwfdb.h \
     Models/annotationreader.h \
+    Models/beatkpi.h \
     Models/csv.h \
     Models/define.h \
     Models/directoryvalidator.h \
+    Models/resultmatrix.h \
     Models/sample.h \
     Models/sheetanalyser.h \
     Models/uiconfigs.h \

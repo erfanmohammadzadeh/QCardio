@@ -24,7 +24,7 @@ bool CAnalyser::analyse()
         QString base1 = QFileInfo(m_analyseCfg.csvPath1[i]).baseName();
         QString base2 = QFileInfo(m_analyseCfg.csvPath2[i]).baseName();
         QString filename = base1 + "VS" + base2;
-        SheetAnalyser analyser(nullptr, pairFile, m_analyseCfg.outputPath, filename);
+        SheetAnalyser analyser(nullptr, pairFile, m_analyseCfg, filename);
         allSucceeded = analyser.processSheets() && allSucceeded;
         fileResultList.append(analyser.fileProcessRes());
     }

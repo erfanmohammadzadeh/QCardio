@@ -1,13 +1,17 @@
 #include "sheetanalyser.h"
+#include "Models/beatkpi.h"
+#include "wfdb/ecgcodes.h"
 
 SheetAnalyser::SheetAnalyser(QObject *parent,
                              QStringList sheetPathList,
-                             QString outputPath,
+                             AnalyseCfg analyseCfg,
                              QString processFileName)
     : QObject(parent)
     , m_sheetPathList(std::move(sheetPathList))
-    , m_outputPath(std::move(outputPath))
+    , m_outputPath(std::move(analyseCfg.outputPath))
     , m_processFileName(processFileName)
+    , sampleRate(analyseCfg.sampleRate)
+
 {
 }
 bool SheetAnalyser::processSheets()
@@ -42,45 +46,56 @@ bool SheetAnalyser::CompareSampleIdxAndType()
 {
     try
     {
-        int csv1Size = m_sheetRes.sampleIndexList1.size();
+        const int csv1Size = m_sheetRes.sampleIndexList1.size();
         const int csv2Size = m_sheetRes.sampleIndexList2.size();
 
-        // Handle edge case
         if (csv1Size == 0 || csv2Size == 0) {
             qDebug() << "Empty sample lists!";
             return false;
         }
 
-        // Constants
-        const int MAX_DIFF_THRESHOLD = 300;  // Initial max threshold
-        const int VALID_DIFF_MAX = 100;      // Maximum valid difference (exclusive)
-        const int VALID_DIFF_MIN = 0;        // Minimum valid difference (inclusive)
-        const int INVALID_INDEX = -1;        // Sentinel for invalid alignment
+        constexpr int MAX_DIFF_THRESHOLD = 300;
+        constexpr int VALID_DIFF_MAX     = 100;
+        constexpr int VALID_DIFF_MIN     = 0;
+        constexpr int INVALID_INDEX      = -1;
 
-        int lastMatchIndex = -1;  // Track the last valid match index
         m_fileProcessRes.clear();
         m_fileProcessRes.fileName = m_processFileName;
-        for(int i = 0; i < csv1Size; i++)
-        {
-            int minDif = MAX_DIFF_THRESHOLD;
-            int bestMatchIndex = 0;
 
-            // Find best match in csv2 for current csv1 index
-            for(int j = 0; j < csv2Size; j++)
+        // Track which csv2 entries have already been consumed by an alignment.
+        std::vector<bool> used2(csv2Size, false);
+
+        int lastMatchIndex = -1;
+
+        for (int i = 0; i < csv1Size; ++i)
+        {
+            // --- find best unused match in csv2 ---
+            int minDif          = MAX_DIFF_THRESHOLD;
+            int bestMatchIndex  = INVALID_INDEX;
+
+            for (int j = 0; j < csv2Size; ++j)
             {
-                int currentDif = m_sheetRes.getDif(i, j);
-                if(currentDif < minDif)
+                if (used2[j]) continue;
+                if (j <= lastMatchIndex) continue;   // enforce monotonic alignment
+
+                const int currentDif = m_sheetRes.getDif(i, j);
+                if (currentDif < minDif)
                 {
-                    minDif = currentDif;
+                    minDif         = currentDif;
                     bestMatchIndex = j;
                 }
             }
 
-            // Check for gap in matching indices
-            if(lastMatchIndex != -1 && (bestMatchIndex - lastMatchIndex) > 1)
+
+            const bool validMatch =
+                (bestMatchIndex != INVALID_INDEX) &&
+                (minDif >= VALID_DIFF_MIN) &&
+                (minDif <  VALID_DIFF_MAX);
+
+            if (validMatch)
             {
-                // Gap detected - insert invalid entries for the gap
-                for(int gap = lastMatchIndex + 1; gap < bestMatchIndex; gap++)
+                // --- record FP rows for any csv2 beats skipped since last match ---
+                for (int gap = lastMatchIndex + 1; gap < bestMatchIndex; ++gap)
                 {
                     m_sheetRes.alignedList1.append(INVALID_INDEX);
                     m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(gap));
@@ -88,66 +103,87 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                     m_sheetRes.typeAlignList1.append(INVALID_INDEX);
                     m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(gap));
                     m_sheetRes.difTypeList.append(false);
-                    m_fileProcessRes.qrsPredict.fp++;
-                }
-            }
 
-            // Now handle the valid/invalid match
-            if(minDif >= VALID_DIFF_MIN && minDif < VALID_DIFF_MAX)
-            {
-                // Valid difference
+                    // Predicted beat with no matching reference beat => FP
+                    m_fileProcessRes.qrsPredict.fp++;
+
+                    // Feed the classifier: reference = Unknown, predicted = actual
+                    m_beatTypeMap.insertBeat(UNKNOWN,
+                                             m_sheetRes.typeList2.at(gap));
+                }
+
+                // --- record the aligned (TP) pair ---
                 m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
                 m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
                 m_sheetRes.difIndexList.append(minDif);
+                m_sheetRes.typeAlignList1.append(m_sheetRes.typeList1.at(i));
+                m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(bestMatchIndex));
+                m_sheetRes.difTypeList.append(isTypeMatch(m_sheetRes.typeList1.at(i),m_sheetRes.typeList2.at(bestMatchIndex)));
+
                 m_fileProcessRes.qrsPredict.tp++;
-                lastMatchIndex = bestMatchIndex;
+
+                m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
+                                         m_sheetRes.typeList2.at(bestMatchIndex));
+
+                used2[bestMatchIndex] = true;
+                lastMatchIndex        = bestMatchIndex;
             }
             else
             {
-                // Invalid difference - use best match anyway but mark as invalid
+                // --- no usable match: reference beat with no detection => FN ---
                 m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
-                m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
+                m_sheetRes.alignedList2.append(INVALID_INDEX);
                 m_sheetRes.difIndexList.append(INVALID_INDEX);
+                m_sheetRes.typeAlignList1.append(m_sheetRes.typeList1.at(i));
+                m_sheetRes.typeAlignList2.append(INVALID_INDEX);
+                m_sheetRes.difTypeList.append(false);
+
                 m_fileProcessRes.qrsPredict.fn++;
-                // Don't update lastMatchIndex for invalid matches to preserve gap detection
-            }
 
-            m_sheetRes.typeAlignList1.append(m_sheetRes.typeList1.at(i));
-            m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(bestMatchIndex));
-            m_sheetRes.difTypeList.append(m_sheetRes.typeList1.at(i) == m_sheetRes.typeList2.at(bestMatchIndex));
+                // Feed the classifier: reference = actual, predicted = Unknown
+                m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
+                                         UNKNOWN);
 
-            //In this part count type mach and qrs validity
-            if(m_sheetRes.typeList1.at(i) == 1 && m_sheetRes.typeList2.at(bestMatchIndex) == 1)
-            {
-                m_fileProcessRes.normalPredict.tp++;
-            }
-            else if(m_sheetRes.typeList1.at(i) == 1 && m_sheetRes.typeList2.at(bestMatchIndex) != 1)
-            {
-                m_fileProcessRes.normalPredict.fn++;
-            }
-            else if(m_sheetRes.typeList1.at(i) != 1 && m_sheetRes.typeList2.at(bestMatchIndex) == 1)
-            {
-                m_fileProcessRes.normalPredict.fp++;
-            }
-
-            if(m_sheetRes.typeList1.at(i) == 5 && m_sheetRes.typeList2.at(bestMatchIndex) == 5)
-            {
-                m_fileProcessRes.pvcPredict.tp++;
-            }
-            else if(m_sheetRes.typeList1.at(i) == 5 && m_sheetRes.typeList2.at(bestMatchIndex) != 5)
-            {
-                m_fileProcessRes.pvcPredict.fn++;
-            }
-            else if(m_sheetRes.typeList1.at(i) != 5 && m_sheetRes.typeList2.at(bestMatchIndex) == 5)
-            {
-                m_fileProcessRes.pvcPredict.fp++;
+                m_fileProcessRes.missedBeatCount++;
+                if(i > 1)
+                    m_fileProcessRes.totalShutdownSqrs += abs(m_sheetRes.sampleIndexList1.at(i)-m_sheetRes.sampleIndexList1.at(i-1));
+                if(NormalBeat.contains(m_sheetRes.typeList1.at(i)))
+                    m_fileProcessRes.normalMissed++;
+                else if(PVCBeat.contains(m_sheetRes.typeList1.at(i)))
+                    m_fileProcessRes.normalMissed++;
             }
         }
+
+        // --- trailing csv2 beats never matched => FP ---
+        for (int j = lastMatchIndex + 1; j < csv2Size; ++j)
+        {
+            if (used2[j]) continue;
+
+            m_sheetRes.alignedList1.append(INVALID_INDEX);
+            m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(j));
+            m_sheetRes.difIndexList.append(INVALID_INDEX);
+            m_sheetRes.typeAlignList1.append(INVALID_INDEX);
+            m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(j));
+            m_sheetRes.difTypeList.append(false);
+
+            m_fileProcessRes.qrsPredict.fp++;
+
+            m_beatTypeMap.insertBeat(UNKNOWN, m_sheetRes.typeList2.at(j));
+        }
+
+        // --- finalize KPIs ---
+        BeatKPI beatKpi(m_beatTypeMap);
+        beatKpi.run();
+
         m_fileProcessRes.qrsPredict.calcParams();
-        m_fileProcessRes.normalPredict.calcParams();
-        m_fileProcessRes.pvcPredict.calcParams();
+        std::memcpy(m_fileProcessRes.beatTypeMap,
+                    m_beatTypeMap.getMatrix(),
+                    sizeof(m_fileProcessRes.beatTypeMap));
+        m_fileProcessRes.normalPredict = beatKpi.m_NPrediction;
+        m_fileProcessRes.pvcPredict    = beatKpi.m_PVCPrediction;
+        m_fileProcessRes.totalShutdown = convertSampleCountToTimeInTime(m_fileProcessRes.totalShutdownSqrs, sampleRate);
     }
-    catch(...)
+    catch (...)
     {
         return false;
     }
@@ -177,4 +213,26 @@ bool SheetAnalyser::loadCSVData()
     return true;
 }
 
+bool SheetAnalyser::isTypeMatch(const quint8 &ref, const quint8 &det)
+{
+    if (NormalBeat.contains(ref) && NormalBeat.contains(det)) {
+        return true;
+    }
+    else if (PVCBeat.contains(ref) && PVCBeat.contains(det)) {
+        return true;
+    }
+    else if (NOISEBeat.contains(ref) && NOISEBeat.contains(det)) {
+        return true;
+    }
+    else
+        return false;
+}
 
+QTime SheetAnalyser::convertSampleCountToTimeInTime(quint64 sampleCount, quint16 samplingTime)
+{
+    QTime time;
+    time.setHMS(0,0,0,0);
+    quint64 duration    = sampleCount/samplingTime;
+    time  = time.addSecs(duration%(24*3600));
+    return  time;
+}

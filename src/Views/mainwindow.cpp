@@ -334,6 +334,7 @@ void MainWindow::on_pushButtonCompare_clicked()
     analyseCfg.csvPath1 = m_CSV1FilePath;
     analyseCfg.csvPath2 = m_CSV2FilePath;
     analyseCfg.outputPath = path;
+    analyseCfg.sampleRate = ui->spinBoxTargetFreq->value();
     Q_EMIT sigAnalyseRequested(analyseCfg);
 }
 
