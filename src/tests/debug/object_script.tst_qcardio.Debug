@@ -1,0 +1,15 @@
+debug/tst_qcardio.o
+debug/beatkpi.o
+debug/csv.o
+debug/directoryvalidator.o
+debug/resultmatrix.o
+debug/sheetanalyser.o
+debug/uiconfigs.o
+debug/analyseservice.o
+debug/exportservice.o
+debug/logservice.o
+debug/moc_csv.o
+debug/moc_sheetanalyser.o
+debug/moc_analyseservice.o
+debug/moc_exportservice.o
+debug/moc_logservice.o

@@ -1,0 +1,15 @@
+release/tst_qcardio.o
+release/beatkpi.o
+release/csv.o
+release/directoryvalidator.o
+release/resultmatrix.o
+release/sheetanalyser.o
+release/uiconfigs.o
+release/analyseservice.o
+release/exportservice.o
+release/logservice.o
+release/moc_csv.o
+release/moc_sheetanalyser.o
+release/moc_analyseservice.o
+release/moc_exportservice.o
+release/moc_logservice.o
