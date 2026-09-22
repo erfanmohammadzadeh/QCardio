@@ -11,7 +11,7 @@ AnalyseService::AnalyseService(QObject *parent, AnalyseCfg cfg)
 {
 }
 
-bool AnalyseService::analyse()
+bool AnalyseService::run()
 {
     const int processFile = qMin(m_analyseCfg.csvPath1.size(), m_analyseCfg.csvPath2.size());
     if (processFile == 0) {
@@ -20,7 +20,7 @@ bool AnalyseService::analyse()
     }
 
     bool allSucceeded = true;
-    QVector<FileProcessResult> fileResultList;
+    AnalyseFileProcessResult fileResult;
     for (int i = 0; i < processFile; ++i) {
         QStringList pairFile;
         pairFile << m_analyseCfg.csvPath1[i] << m_analyseCfg.csvPath2[i];
@@ -30,18 +30,19 @@ bool AnalyseService::analyse()
         Q_EMIT sigAppendLog(QString("Comparing %1 (%2/%3)").arg(filename).arg(i + 1).arg(processFile));
         SheetAnalyser analyser(nullptr, pairFile, m_analyseCfg, filename);
         allSucceeded = analyser.processSheets() && allSucceeded;
-        fileResultList.append(analyser.fileProcessRes());
+        fileResult.fileProcessResult.append(analyser.fileProcessRes());
         Q_EMIT sigProgress(i + 1, processFile);
     }
+    fileResult.calcParam();
 
-    if (!saveProcessFileResult(fileResultList)) {
+    if (!saveProcessFileResult(fileResult)) {
         QMessageBox::critical(nullptr, "Save Report Err", "Save report result failed.");
     }
 
     return allSucceeded;
 }
 
-bool AnalyseService::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
+bool AnalyseService::saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes)
 {
     QString path = m_analyseCfg.outputPath + "/" + "Report.csv";
     Q_EMIT sigAppendLog("Result Path: " + path);

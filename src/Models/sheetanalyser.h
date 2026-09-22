@@ -42,7 +42,7 @@ private:
     bool saveResult();
     bool loadCSVData();
     bool isTypeMatch(const quint8& ref, const quint8& det);
-    int  sampleRate = 178;
+    AnalyseCfg m_analyseCfg;
 
     ResultMatrix m_beatTypeMap = ResultMatrix(MatrixType::BeatType);
     ResultMatrix m_pvcRunMap = ResultMatrix(MatrixType::RunEpisode);

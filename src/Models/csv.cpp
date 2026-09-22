@@ -29,10 +29,13 @@ bool CSV::loadFromFile(const QString &path)
         return false;
     }
 
+    int idx = 0;
     QTextStream in(&file);
+    // int startOfsetCounter = m_startAnalyse;
     while (!in.atEnd()) {
         const QString line = in.readLine().trimmed();
-        if (line.isEmpty()) {
+        if (line.isEmpty())
+        {
             continue;
         }
 
@@ -52,6 +55,7 @@ bool CSV::loadFromFile(const QString &path)
 
         m_csvFormat.sampleIndex.append(sampleIndex);
         m_csvFormat.type.append(static_cast<quint8>(type));
+        idx++;
     }
 
     return true;
@@ -118,7 +122,7 @@ bool CSV::saveRawCSVRes(const SheetResult &res)
     return true;
 }
 
-bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes)
+bool CSV::saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes)
 {
     QFile file201_103(m_filename);
     if (!file201_103.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -142,7 +146,7 @@ bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes
               "V FPR"
               "\n";
 
-    for (const FileProcessResult &res : fileProcessRes)
+    for (const FileProcessResult &res : fileProcessRes.fileProcessResult)
     {
         out103 << res.fileName << ","
                << res.beatTypeMap[ArrhythmiaType::NormalArr][ArrhythmiaType::NormalArr]           << ","
@@ -187,10 +191,10 @@ bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes
 
     auto pct = [](int part, int total) -> QString {
         if (total <= 0) return QString("0.00");
-        return QString::number(100.0 * part / total, 'f', 2);
+        return QString::number(100.0 * static_cast<double>(part) / static_cast<double>(total), 'f', 2);
     };
 
-    for (const FileProcessResult &res : fileProcessRes)
+    for (const FileProcessResult &res : fileProcessRes.fileProcessResult)
     {
 
         out104a << res.fileName                                                          << ","
@@ -198,8 +202,8 @@ bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes
                 << res.beatTypeMap[ArrhythmiaType::VentricularArr][ArrhythmiaType::UnknownArr] << ","
                 << res.beatTypeMap[ArrhythmiaType::UnknownArr][ArrhythmiaType::UnknownArr]     << ","
                 << res.missedBeatCount                                                   << ","
-                << pct(res.normalMissed, res.missedBeatCount)                            << ","
-                << pct(res.pvcMissed,    res.missedBeatCount)                            << ","
+                << pct(res.normalMissed, res.totalBeat)                            << ","
+                << pct(res.pvcMissed,    res.totalBeat)                            << ","
                 << res.totalShutdown.toString("hh:mm:ss")
                 << "\n";
 
@@ -232,7 +236,7 @@ bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes
                "Q_TN(%)"
                "\n"; // FIXED: added comma and newline
 
-    for (const FileProcessResult &res : fileProcessRes)
+    for (const FileProcessResult &res : fileProcessRes.fileProcessResult)
     {
         out104b << res.fileName        << ","
                 << QString("%1 (%2)").arg(res.normalPredict.tp).arg(res.normalPredict.rtp, 0, 'f', 2)    << ","
@@ -255,58 +259,27 @@ bool CSV::saveProcessFileResult(const QVector<FileProcessResult> &fileProcessRes
             return false;
         }
     }
+    out104b << "\n\n\n";
+    out104b << "Avg Se QRS,"
+               "Avg Se PVC,"
+               "Avg Se Normal,"
+               "Gross QRS,"
+               "Gross PVC,"
+               "Gross Normal"
+               "\n";
+    out104b << QString("%1").arg(fileProcessRes.avgSeQrs, 0, 'f', 2) << ","
+            << QString("%1").arg(fileProcessRes.avgSePvc, 0, 'f', 2) << ","
+            << QString("%1").arg(fileProcessRes.avgSeNor, 0, 'f', 2) << ","
+            << QString("%1").arg(fileProcessRes.avgPPQrs, 0, 'f', 2) << ","
+            << QString("%1").arg(fileProcessRes.avgPPPvc, 0, 'f', 2) << ","
+            << QString("%1").arg(fileProcessRes.avgPPNor, 0, 'f', 2) << ","
+
+               ;
     file201_104b.close();
-
-    /////////////////////////////////
-    // QFile file201_104c(m_filename + "c.csv");
-    // if (!file201_104c.open(QIODevice::WriteOnly | QIODevice::Text))
-    //     return false;
-
-    // QTextStream out104c(&file201_104c);
-    // out104c << "FileName,"
-    //            "%V_couplet_se,"
-    //            "%V_couplet_+P,"
-    //            "%V_short run_se,"
-    //            "%V_short run_+P,"
-    //            "%V_long run_se,"
-    //            "%V_long run_+P,"
-    //            "%S_couplet_se,"
-    //            "%S_couplet_+P,"
-    //            "%S_short run_se,"
-    //            "%S_short run_+P,"
-    //            "%S_long run_se,"
-    //            "%S_long run_+P,"
-    //            "%AF duration_se,"
-    //            "%AF duration_+P\n";
-
-    // for (const FileProcessResult &res : fileProcessRes)
-    // {
-    //     out104c << res.fileName << ","
-    //             << res.pvc_couplet.se  << ","
-    //             << res.pvc_couplet.p   << ","
-    //             << res.pvc_shortRun.se << ","
-    //             << res.pvc_shortRun.p  << ","
-    //             << res.pvc_longRun.se  << ","
-    //             << res.pvc_longRun.p   << ","
-    //             << res.svt_couplet.se  << ","
-    //             << res.svt_couplet.p   << ","
-    //             << res.svt_shortRun.se << ","
-    //             << res.svt_shortRun.p  << ","
-    //             << res.svt_longRun.se  << ","
-    //             << res.svt_longRun.p   << ","
-    //             << res.AF_duration.se  << ","
-    //             << res.AF_duration.p   << "\n";
-
-    //     if (out104c.status() != QTextStream::Ok)
-    //     {
-    //         file201_104c.close();
-    //         return false;
-    //     }
-    // }
-    // file201_104c.close();
-
     return true;
 }
+
+
 
 QString CSV::getFilename() const
 {

@@ -10,7 +10,7 @@ SheetAnalyser::SheetAnalyser(QObject *parent,
     , m_sheetPathList(std::move(sheetPathList))
     , m_outputPath(std::move(analyseCfg.outputPath))
     , m_processFileName(processFileName)
-    , sampleRate(analyseCfg.sampleRate)
+    , m_analyseCfg(analyseCfg)
 
 {
 }
@@ -67,6 +67,7 @@ bool SheetAnalyser::CompareSampleIdxAndType()
 
         int lastMatchIndex = -1;
 
+        m_fileProcessRes.totalBeat = csv1Size;
         for (int i = 0; i < csv1Size; ++i)
         {
             // --- find best unused match in csv2 ---
@@ -105,11 +106,14 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                     m_sheetRes.difTypeList.append(false);
 
                     // Predicted beat with no matching reference beat => FP
-                    m_fileProcessRes.qrsPredict.fp++;
+                    if(m_analyseCfg.compareOfset < i)
+                    {
+                        m_fileProcessRes.qrsPredict.fp++;
 
-                    // Feed the classifier: reference = Unknown, predicted = actual
-                    m_beatTypeMap.insertBeat(UNKNOWN,
-                                             m_sheetRes.typeList2.at(gap));
+                        // Feed the classifier: reference = Unknown, predicted = actual
+                        m_beatTypeMap.insertBeat(UNKNOWN,
+                                                 m_sheetRes.typeList2.at(gap));
+                    }
                 }
 
                 // --- record the aligned (TP) pair ---
@@ -120,10 +124,13 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                 m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(bestMatchIndex));
                 m_sheetRes.difTypeList.append(isTypeMatch(m_sheetRes.typeList1.at(i),m_sheetRes.typeList2.at(bestMatchIndex)));
 
-                m_fileProcessRes.qrsPredict.tp++;
+                if(m_analyseCfg.compareOfset < i)
+                {
+                    m_fileProcessRes.qrsPredict.tp++;
 
-                m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
-                                         m_sheetRes.typeList2.at(bestMatchIndex));
+                    m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
+                                             m_sheetRes.typeList2.at(bestMatchIndex));
+                }
 
                 used2[bestMatchIndex] = true;
                 lastMatchIndex        = bestMatchIndex;
@@ -138,19 +145,22 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                 m_sheetRes.typeAlignList2.append(INVALID_INDEX);
                 m_sheetRes.difTypeList.append(false);
 
-                m_fileProcessRes.qrsPredict.fn++;
+                if(m_analyseCfg.compareOfset < i)
+                {
+                    m_fileProcessRes.qrsPredict.fn++;
 
-                // Feed the classifier: reference = actual, predicted = Unknown
-                m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
-                                         UNKNOWN);
+                    // Feed the classifier: reference = actual, predicted = Unknown
+                    m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
+                                             UNKNOWN);
 
-                m_fileProcessRes.missedBeatCount++;
-                if(i > 1)
-                    m_fileProcessRes.totalShutdownSqrs += abs(m_sheetRes.sampleIndexList1.at(i)-m_sheetRes.sampleIndexList1.at(i-1));
-                if(NormalBeat.contains(m_sheetRes.typeList1.at(i)))
-                    m_fileProcessRes.normalMissed++;
-                else if(PVCBeat.contains(m_sheetRes.typeList1.at(i)))
-                    m_fileProcessRes.normalMissed++;
+                    m_fileProcessRes.missedBeatCount++;
+                    if(i > 1)
+                        m_fileProcessRes.totalShutdownSqrs += abs(m_sheetRes.sampleIndexList1.at(i)-m_sheetRes.sampleIndexList1.at(i-1));
+                    if(NormalBeat.contains(m_sheetRes.typeList1.at(i)))
+                        m_fileProcessRes.normalMissed++;
+                    else if(PVCBeat.contains(m_sheetRes.typeList1.at(i)))
+                        m_fileProcessRes.pvcMissed++;
+                }
             }
         }
 
@@ -166,9 +176,11 @@ bool SheetAnalyser::CompareSampleIdxAndType()
             m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(j));
             m_sheetRes.difTypeList.append(false);
 
-            m_fileProcessRes.qrsPredict.fp++;
-
-            m_beatTypeMap.insertBeat(UNKNOWN, m_sheetRes.typeList2.at(j));
+            if(m_analyseCfg.compareOfset < j)
+            {
+                m_fileProcessRes.qrsPredict.fp++;
+                m_beatTypeMap.insertBeat(UNKNOWN, m_sheetRes.typeList2.at(j));
+            }
         }
 
         // --- finalize KPIs ---
@@ -181,7 +193,8 @@ bool SheetAnalyser::CompareSampleIdxAndType()
                     sizeof(m_fileProcessRes.beatTypeMap));
         m_fileProcessRes.normalPredict = beatKpi.m_NPrediction;
         m_fileProcessRes.pvcPredict    = beatKpi.m_PVCPrediction;
-        m_fileProcessRes.totalShutdown = convertSampleCountToTimeInTime(m_fileProcessRes.totalShutdownSqrs, sampleRate);
+        m_fileProcessRes.totalShutdown = convertSampleCountToTimeInTime(m_fileProcessRes.totalShutdownSqrs, m_analyseCfg.sampleRate);
+        m_fileProcessRes.compareOfset = m_analyseCfg.compareOfset;
     }
     catch (...)
     {

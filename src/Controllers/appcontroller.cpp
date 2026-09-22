@@ -91,45 +91,50 @@ void AppController::sltExportAllRequested(const ExprotSetting& setting)
     QStringList pathCopy = setting.pathList;
     SignalViewParameters settingCopy = setting.params;
 
-    QFuture<void> future = QtConcurrent::run(QThreadPool::globalInstance(),
-                                             [=]() mutable
-                                             {
-                                                 for (const QString& id : pathCopy) {
-                                                     bool success = false;
-                                                     int retryCount = 0;
-                                                     const int MAX_RETRIES = 3;
+    QFuture<void> future =
+        QtConcurrent::run(QThreadPool::globalInstance(), [=]() mutable
+                          {
+                              for (const QString& id : pathCopy)
+                              {
+                                  bool success = false;
+                                  int retryCount = 0;
+                                  const int MAX_RETRIES = 3;
 
-                                                     settingCopy.signalFilePath = id;
+                                  settingCopy.signalFilePath = id;
 
-                                                     while (!success && retryCount < MAX_RETRIES) {
-                                                         Q_EMIT sigAppendLog(QString("Attempting to read %1 retry %2 count").arg(id).arg(retryCount));
-                                                         success = m_wfdbService->readData(settingCopy);
-                                                         success = m_wfdbService->readAnot(settingCopy) && success;
-                                                         if (success)
-                                                             m_signalViewController->setData(m_wfdbService->getStructData());
+                                  while (!success && retryCount < MAX_RETRIES)
+                                  {
+                                      Q_EMIT sigAppendLog(QString("Attempting to read %1 retry %2 count").arg(id).arg(retryCount));
+                                      success = m_wfdbService->readData(settingCopy);
+                                      success = m_wfdbService->readAnot(settingCopy) && success;
+                                      if (success)
+                                          m_signalViewController->setData(m_wfdbService->getStructData());
 
-                                                         if (!success) {
-                                                             retryCount++;
-                                                             Q_EMIT sigAppendLog(QString("Read failed for %1 retry %2").arg(id).arg(retryCount));
-                                                             QThread::msleep(50);
-                                                         }
-                                                     }
+                                      if (!success) {
+                                          retryCount++;
+                                          Q_EMIT sigAppendLog(QString("Read failed for %1 retry %2").arg(id).arg(retryCount));
+                                          QThread::msleep(50);
+                                      }
+                                  }
 
-                                                     if (success) {
-                                                         Q_EMIT sigAppendLog("Exporting:" + id);
-                                                         MIT_BIH_ECGData data = m_wfdbService->getStructData();
-                                                         data.filename = id;
-                                                         m_exportService->exportData(data, setting);
-                                                     } else {
-                                                         Q_EMIT sigAppendLog(QString("Failed to read data for %1 after %2 attempts.").arg(id).arg(MAX_RETRIES));
-                                                     }
+                                  if (success)
+                                  {
+                                      Q_EMIT sigAppendLog("Exporting:" + id);
+                                      MIT_BIH_ECGData data = m_wfdbService->getStructData();
+                                      data.filename = id;
+                                      m_exportService->exportData(data, setting);
+                                  }
+                                  else
+                                  {
+                                      Q_EMIT sigAppendLog(QString("Failed to read data for %1 after %2 attempts.").arg(id).arg(MAX_RETRIES));
+                                  }
 
-                                                     int current = counter->fetchAndAddOrdered(1) + 1;
-                                                     QMetaObject::invokeMethod(progressBar, "setValue",
-                                                                               Qt::QueuedConnection,
-                                                                               Q_ARG(int, current));
-                                                 }
-                                             });
+                                  int current = counter->fetchAndAddOrdered(1) + 1;
+                                  QMetaObject::invokeMethod(progressBar, "setValue",
+                                                            Qt::QueuedConnection,
+                                                            Q_ARG(int, current));
+                              }
+                          });
 
     connect(watcher, &QFutureWatcher<void>::finished,
             [=]() {
@@ -157,20 +162,21 @@ void AppController::sltAnalyseRequested(const AnalyseCfg& analyseCfg)
     m_mainWindow->enableUIBtn(false);
 
     QFutureWatcher<bool> *watcher = new QFutureWatcher<bool>(this);
-    QFuture<bool> future = QtConcurrent::run(QThreadPool::globalInstance(), [=]() {
-        AnalyseService analyser(nullptr, analyseCfg);
-        connect(&analyser, &AnalyseService::sigAppendLog,
-                m_logService, &LogService::sltAppendLog, Qt::QueuedConnection);
-        connect(&analyser, &AnalyseService::sigProgress,
-                progressBar,
-                [progressBar](int current, int total) {
-                    progressBar->setRange(0, total);
-                    progressBar->setValue(current);
-                },
-                Qt::QueuedConnection);
+    QFuture<bool> future =
+        QtConcurrent::run(QThreadPool::globalInstance(), [=]() {
+            AnalyseService analyser(nullptr, analyseCfg);
+            connect(&analyser, &AnalyseService::sigAppendLog,
+                    m_logService, &LogService::sltAppendLog, Qt::QueuedConnection);
+            connect(&analyser, &AnalyseService::sigProgress,
+                    progressBar,
+                    [progressBar](int current, int total) {
+                        progressBar->setRange(0, total);
+                        progressBar->setValue(current);
+                    },
+                    Qt::QueuedConnection);
 
-        return analyser.analyse();
-    });
+            return analyser.run();
+        });
 
     connect(watcher, &QFutureWatcher<bool>::finished, this, [=]() {
         const bool success = watcher->result();

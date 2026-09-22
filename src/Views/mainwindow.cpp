@@ -336,6 +336,8 @@ void MainWindow::on_pushButtonCompare_clicked()
     analyseCfg.csvPath2 = m_CSV2FilePath;
     analyseCfg.outputPath = path;
     analyseCfg.sampleRate = ui->spinBoxTargetFreq->value();
+    analyseCfg.compareOfset = ui->spinBoxCompareOfset->value();
+
     enableUIBtn(false);
     Q_EMIT sigAnalyseRequested(analyseCfg);
 }
@@ -343,9 +345,14 @@ void MainWindow::on_pushButtonCompare_clicked()
 void MainWindow::on_comboBoxDatabaseName_currentTextChanged(const QString &arg1)
 {
     if(arg1 == datasetName[1])
+    {
         ui->spinBoxSourceFreq->setValue(250);
+        ui->spinBoxCompareOfset->setValue(460);
+    }
     else if(arg1 == datasetName[0])
         ui->spinBoxSourceFreq->setValue(360);
+    else
+        ui->spinBoxCompareOfset->setValue(4);
 }
 
 

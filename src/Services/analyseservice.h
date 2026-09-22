@@ -9,7 +9,7 @@ class AnalyseService : public QObject
     Q_OBJECT
 public:
     explicit AnalyseService(QObject *parent = nullptr, AnalyseCfg cfg = AnalyseCfg());
-    bool analyse();
+    bool run();
 
 signals:
     void sigAppendLog(const QString& text);
@@ -17,7 +17,7 @@ signals:
 
 private:
     AnalyseCfg m_analyseCfg;
-    bool saveProcessFileResult(const QVector<FileProcessResult>& fileProcessRes);
+    bool saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes);
 };
 
 #endif // ANALYSESERVICE_H

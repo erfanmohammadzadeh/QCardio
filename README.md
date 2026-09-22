@@ -41,14 +41,39 @@ Flow: **View** → **AppController** → **Service** → **Model**; results go b
 - Qt 6.8 (Widgets + Concurrent) and a C++17 compiler (MinGW 64-bit is used in the current kit)
 - libcurl (Windows path in `QCardio.pro`: `C:/curl-8.20.0_5`)
 
-Open `src/QCardio.pro` in Qt Creator and build, or from a kit that already has `qmake` and the compiler on `PATH`:
+## Tests
 
-```bash
-cd src
-qmake QCardio.pro
-make
+Qt Test coverage for models and services lives in `src/tests/` (directory validation, CSV I/O, beat KPIs, compare, export, log). WFDB record I/O is not exercised here.
+
+`qmake` must be able to run `g++`. A normal PowerShell session does **not** have MinGW on `PATH`, which produces:
+
+`Project ERROR: Cannot run compiler 'g++'. Maybe you forgot to setup the environment?`
+
+**Recommended (Windows / Qt Creator MinGW kit):** from `src/tests` run:
+
+```powershell
+.\run_tests.ps1
 ```
 
+That script adds the Qt 6.8.2 MinGW kit and compiler to `PATH`, then builds and runs `tst_qcardio`. If your install is not under `C:\Qt\6.8.2` and `C:\Qt\Tools\mingw1310_64`, set:
+
+```powershell
+$env:QT_MINGW_BIN = "C:\Qt\6.8.2\mingw_64\bin"
+$env:MINGW_BIN    = "C:\Qt\Tools\mingw1310_64\bin"
+.\run_tests.ps1
+```
+
+**Manual PATH** (same kit Qt Creator uses):
+
+```powershell
+$env:PATH = "C:\Qt\Tools\mingw1310_64\bin;C:\Qt\6.8.2\mingw_64\bin;" + $env:PATH
+cd src\tests
+qmake tests.pro -spec win32-g++ "CONFIG+=debug"
+mingw32-make
+.\debug\tst_qcardio.exe
+```
+
+You can also open `src/tests/tests.pro` in Qt Creator and run it with the existing Desktop Qt 6.8.2 MinGW 64-bit kit.
 ## Usage
 
 ### View and export records

@@ -163,7 +163,6 @@ struct SheetResult
     QVector<int> difIndexList;
     QVector<bool> difTypeList;
 
-
     int getDif(int idx1, int idx2)
     {
         // Changed '>' to '>=' to fix the off-by-one crash
@@ -200,6 +199,7 @@ struct AnalyseCfg
     QStringList csvPath2;
     QString outputPath;
     int sampleRate = 178;
+    int compareOfset = 4;
 };
 
 struct Predicting
@@ -291,6 +291,8 @@ struct FileProcessResult
     quint32 totalShutdownSqrs = 0;
     QTime totalShutdown;
     BeatMatrixType beatTypeMap = {{0}};
+    int compareOfset = 4;
+    int totalBeat = 0;
 
     void clear()
     {
@@ -310,10 +312,89 @@ struct FileProcessResult
         normalMissed = 0.0;
         pvcMissed = 0.0;
         totalShutdownSqrs=0;
+        compareOfset = 4;
+        totalBeat = 0;
+    }
+};
+
+struct AnalyseFileProcessResult
+{
+    QVector<FileProcessResult> fileProcessResult;
+    float avgSePvc = 0.0;
+    float avgSeQrs = 0.0;
+    float avgSeNor = 0.0;
+    float avgPPPvc = 0.0;
+    float avgPPQrs = 0.0;
+    float avgPPNor = 0.0;
+    int   cntSePvc = 0;
+    int   cntSeQrs = 0;
+    int   cntSeNor = 0;
+    int   cntPPPvc = 0;
+    int   cntPPQrs = 0;
+    int   cntPPNor = 0;
+
+    void calcParam()
+    {
+        float sumSePvc = 0.0;
+        float sumSeQrs = 0.0;
+        float sumSeNor = 0.0;
+        float sumPPPvc = 0.0;
+        float sumPPQrs = 0.0;
+        float sumPPNor = 0.0;
+        for(const auto& file: fileProcessResult)
+        {
+            sumSePvc += addVal(file.pvcPredict.se, cntSePvc);
+            sumSeQrs += addVal(file.qrsPredict.se, cntSeQrs);
+            sumSeNor += addVal(file.normalPredict.se, cntSeNor);
+            sumPPPvc += addVal(file.pvcPredict.p, cntPPPvc);
+            sumPPQrs += addVal(file.qrsPredict.p, cntPPQrs);
+            sumPPNor += addVal(file.normalPredict.p, cntPPNor);
+        }
+        avgSePvc = divideNZ(sumSePvc, cntSePvc);
+        avgSeNor = divideNZ(sumSeNor, cntSeNor);
+        avgSeQrs = divideNZ(sumSeQrs, cntSeQrs);
+        avgPPPvc = divideNZ(sumPPPvc, cntPPPvc);
+        avgPPNor = divideNZ(sumPPQrs, cntPPQrs);
+        avgPPQrs = divideNZ(sumPPNor, cntPPNor);
+    }
+
+    float divideNZ(const float& value, const int& count)
+    {
+        if(count == 0) return 0.0;
+        return value/static_cast<float>(count);
+    }
+
+    float addVal(const float& val, int& cnt)
+    {
+        if(val > 0)
+        {
+            cnt++;
+            return val;
+        }
+        else
+            return 0.0;
+    }
+
+    void clear()
+    {
+        for(int i = 0; i < fileProcessResult.size(); i++)
+            fileProcessResult[i].clear();
+        fileProcessResult.clear();
+        fileProcessResult.squeeze();
+
+        avgSePvc = 0.0;
+        avgSeQrs = 0.0;
+        avgSeNor = 0.0;
+        avgPPPvc = 0.0;
+        avgPPQrs = 0.0;
+        avgPPNor = 0.0;
     }
 };
 
 const static QStringList datasetName = {"MIT-BIH", "AHA", "ESC", "CU"};
+const static QStringList noneBeat = {"[", "!", "]", "x",
+                                     "(", ")", "p", "t", "u", "`", "'", "^",
+                                     "|", "~", "+", "s", "T", "*", "D", "=","@", "\""};
 
 enum MatrixType
 {

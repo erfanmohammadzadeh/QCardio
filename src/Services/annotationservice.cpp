@@ -47,6 +47,11 @@ bool AnnotationService::loadAnnotations()
             continue;
         }
 
+        if(noneBeat.contains(QString::fromLatin1(annstr(annot.anntyp))))
+        {
+            continue;
+        }
+
         AnnotationData data;
         data.time = annot.time;
         data.timeResampled = annot.time;
