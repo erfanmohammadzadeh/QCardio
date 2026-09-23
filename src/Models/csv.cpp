@@ -29,9 +29,7 @@ bool CSV::loadFromFile(const QString &path)
         return false;
     }
 
-    int idx = 0;
     QTextStream in(&file);
-    // int startOfsetCounter = m_startAnalyse;
     while (!in.atEnd()) {
         const QString line = in.readLine().trimmed();
         if (line.isEmpty())
@@ -55,7 +53,6 @@ bool CSV::loadFromFile(const QString &path)
 
         m_csvFormat.sampleIndex.append(sampleIndex);
         m_csvFormat.type.append(static_cast<quint8>(type));
-        idx++;
     }
 
     return true;
@@ -76,17 +73,11 @@ void CSV::saveSignal()
 
     // Find minimum time for shifting
     long minTime = 0;
-    // for (const auto& ann : std::as_const(m_csvFormat.sampleIndex)) {
-    //     if (ann < minTime) minTime = ann;
-    // }
-
     int numAnnotations = m_csvFormat.sampleIndex.size();
 
     for (int i = 0; i < numAnnotations; ++i)
     {
         long sampleIndex = (m_csvFormat.sampleIndex.at(i) - minTime);
-        // qDebug() << "sav "<< sampleIndex;
-
         out << sampleIndex << ","
             << m_csvFormat.type.at(i) << "\n";
     }
@@ -197,13 +188,13 @@ bool CSV::saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes)
     for (const FileProcessResult &res : fileProcessRes.fileProcessResult)
     {
 
-        out104a << res.fileName                                                          << ","
+        out104a << res.fileName                                                                << ","
                 << res.beatTypeMap[ArrhythmiaType::NormalArr][ArrhythmiaType::UnknownArr]      << ","
                 << res.beatTypeMap[ArrhythmiaType::VentricularArr][ArrhythmiaType::UnknownArr] << ","
                 << res.beatTypeMap[ArrhythmiaType::UnknownArr][ArrhythmiaType::UnknownArr]     << ","
-                << res.missedBeatCount                                                   << ","
-                << pct(res.normalMissed, res.totalBeat)                            << ","
-                << pct(res.pvcMissed,    res.totalBeat)                            << ","
+                << res.missedBeatCount                                                         << ","
+                << pct(res.normalMissed, res.totalBeat)                                        << ","
+                << pct(res.pvcMissed,    res.totalBeat)                                        << ","
                 << res.totalShutdown.toString("hh:mm:ss")
                 << "\n";
 
@@ -238,20 +229,20 @@ bool CSV::saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes)
 
     for (const FileProcessResult &res : fileProcessRes.fileProcessResult)
     {
-        out104b << res.fileName        << ","
-                << QString("%1 (%2)").arg(res.normalPredict.tp).arg(res.normalPredict.rtp, 0, 'f', 2)    << ","
-                << QString("%1 (%2)").arg(res.pvcPredict.tp   ).arg(res.pvcPredict.rtp, 0, 'f', 2)       << ","
-                << QString("%1 (%2)").arg(res.qrsPredict.tp   ).arg(res.qrsPredict.rtp, 0, 'f', 2)       << ","
-                << QString("%1 (%2)").arg(res.normalPredict.fn).arg(res.normalPredict.rfn, 0, 'f', 2)    << ","
-                << QString("%1 (%2)").arg(res.pvcPredict.fn   ).arg(res.pvcPredict.rfn, 0, 'f', 2)       << ","
-                << QString("%1 (%2)").arg(res.qrsPredict.fn   ).arg(res.normalPredict.rfn, 0, 'f', 2)    << ","
-                << QString("%1 (%2)").arg(res.normalPredict.fp).arg(res.normalPredict.rfp, 0, 'f', 2)    << ","
-                << QString("%1 (%2)").arg(res.pvcPredict.fp   ).arg(res.pvcPredict.rfp, 0, 'f', 2)       << ","
-                << QString("%1 (%2)").arg(res.qrsPredict.fp   ).arg(res.qrsPredict.rfp, 0, 'f', 2)       << ","
-                << QString("%1 (%2)").arg(res.normalPredict.tn).arg(res.normalPredict.rtn, 0, 'f', 2)    << ","
-                << QString("%1 (%2)").arg(res.pvcPredict.tn   ).arg(res.pvcPredict.rtn, 0, 'f', 2)       << ","
-                << QString("%1 (%2)").arg(res.qrsPredict.tn   ).arg(res.qrsPredict.rtn, 0, 'f', 2)
-                << "\n";  // FIXED: was "/n"
+        out104b << res.fileName << ","
+                << QString("%1 (%2)").arg(res.normalPredict.tp).arg(res.normalPredict.rtp, 0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.tp   ).arg(res.pvcPredict.rtp,    0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.tp   ).arg(res.qrsPredict.rtp,    0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.normalPredict.fn).arg(res.normalPredict.rfn, 0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.fn   ).arg(res.pvcPredict.rfn,    0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.fn   ).arg(res.normalPredict.rfn, 0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.normalPredict.fp).arg(res.normalPredict.rfp, 0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.fp   ).arg(res.pvcPredict.rfp,    0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.fp   ).arg(res.qrsPredict.rfp,    0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.normalPredict.tn).arg(res.normalPredict.rtn, 0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.pvcPredict.tn   ).arg(res.pvcPredict.rtn,    0, 'f', 2) << ","
+                << QString("%1 (%2)").arg(res.qrsPredict.tn   ).arg(res.qrsPredict.rtn,    0, 'f', 2)
+                << "\n";
 
         if (out104b.status() != QTextStream::Ok)
         {

@@ -114,14 +114,16 @@ void MainWindow::addFileToListWidget(QListWidget *widget,
 
     widget->setUpdatesEnabled(false);
 
-    QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+    QDirIterator it(path,
+                    QDir::Files | QDir::NoDotAndDotDot,
+                    QDirIterator::Subdirectories);
     while (it.hasNext())
     {
         it.next();
 
         const QFileInfo info = it.fileInfo();
 
-        if (info.suffix() != type ||
+        if (info.suffix().compare(type, Qt::CaseInsensitive) != 0 ||
             !widget->findItems(info.completeBaseName(), Qt::MatchExactly).isEmpty())
         {
             continue;
@@ -129,15 +131,48 @@ void MainWindow::addFileToListWidget(QListWidget *widget,
 
         filePaths.append(info.absoluteFilePath());
         fileNames.append(info.completeBaseName());
-        // QListWidgetItem *item = new QListWidgetItem(info.completeBaseName());
-        // item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
-        // item->setCheckState(Qt::Unchecked);
-        // widget->addItem(item);
         widget->addItem(info.completeBaseName());
     }
     widget->setUpdatesEnabled(true);
     Q_EMIT sigAppendLog(QString("%1 record added to list.").arg(fileNames.size()));
 }
+
+// void MainWindow::addFileToListWidget(QListWidget *widget,
+//                                      QStringList &filePaths,
+//                                      QStringList &fileNames,
+//                                      const QString& type,
+//                                      const QString &path)
+// {
+//     widget->clear();
+//     filePaths.clear();
+//     fileNames.clear();
+
+//     widget->setUpdatesEnabled(false);
+
+//     QDirIterator it(path, QDir::Files | QDir::NoDotAndDotDot);
+//     while (it.hasNext())
+//     {
+//         it.next();
+
+//         const QFileInfo info = it.fileInfo();
+
+//         if (info.suffix() != type ||
+//             !widget->findItems(info.completeBaseName(), Qt::MatchExactly).isEmpty())
+//         {
+//             continue;
+//         }
+
+//         filePaths.append(info.absoluteFilePath());
+//         fileNames.append(info.completeBaseName());
+//         // QListWidgetItem *item = new QListWidgetItem(info.completeBaseName());
+//         // item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+//         // item->setCheckState(Qt::Unchecked);
+//         // widget->addItem(item);
+//         widget->addItem(info.completeBaseName());
+//     }
+//     widget->setUpdatesEnabled(true);
+//     Q_EMIT sigAppendLog(QString("%1 record added to list.").arg(fileNames.size()));
+// }
 
 void MainWindow::addProgressBar(QProgressBar* bar)
 {
@@ -297,6 +332,7 @@ void MainWindow::on_pushButtonData1_clicked()
 void MainWindow::on_pushButtonData2_clicked()
 {
     QString path = QFileDialog::getExistingDirectory(nullptr, "Select Data 2 Directory", QDir::homePath());
+    m_selectedPath = path;
     if(!DirectoryValidator::validateDirectory(path))
     {
         QMessageBox::critical(nullptr, "Dir Validation", "Dir is invalid");
@@ -323,11 +359,14 @@ void MainWindow::on_pushButtonCompare_clicked()
         return;
     }
 
-    const QString path = QFileDialog::getExistingDirectory(this,
-                                                           QStringLiteral("Select Compare Result Directory"),
-                                                           QDir::homePath());
+    QDir compareDir(m_selectedPath);
+    compareDir.cdUp();
+    const QString path = compareDir.path() + QDir::separator() + "Compare";
+    if(!QDir(path).exists())
+        QDir(path).mkpath(path);
+
     if (!DirectoryValidator::validateDirectory(path)) {
-        QMessageBox::critical(this, QStringLiteral("Dir Validation"), QStringLiteral("Dir is invalid"));
+        QMessageBox::critical(this, QStringLiteral("Dir Validation"), QStringLiteral("Dir is %1 invalid").arg(path));
         return;
     }
 
@@ -361,7 +400,6 @@ void MainWindow::on_toolButtonClearLogs_clicked()
     ui->textEditLogs->clear();
 }
 
-#include <QDesktopServices>
 void MainWindow::on_toolButtonHelp_clicked()
 {
     QFile resource(":/Res/help/Physionet Help.pdf");

@@ -42,7 +42,7 @@ struct RRInterval {
     long interval;  // Difference in samples
     double intervalSeconds; // Interval in seconds
 
-    QString toString(int samplingRate) const {
+    QString toString() const {
         return QString("RR = %1 samples (%2 ms)")
         .arg(interval)
             .arg(intervalSeconds * 1000, 0, 'f', 2);
@@ -223,7 +223,6 @@ struct Predicting
         const int actualPos    = tp + fn;
         const int actualNeg    = tn + fp;
         const int predictedPos = tp + fp;
-        const int N_total = tp + tn + fp + fn;
 
         se  = (actualPos    > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos)    : 0.0f;
         p   = (predictedPos > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(predictedPos) : 0.0f;

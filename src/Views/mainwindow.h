@@ -15,6 +15,8 @@
 #include <QListWidgetItem>
 #include <Models/define.h>
 #include <QProgressBar>
+#include <QDesktopServices>
+
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
@@ -89,6 +91,8 @@ private:
     SettingsService *m_setting;
     quint8 m_counterLog = 0;
     QString m_databasePath;
+
+    QString m_selectedPath;
 
 Q_SIGNALS:
     void sigReadDataRequested(const SignalViewParameters& params);
