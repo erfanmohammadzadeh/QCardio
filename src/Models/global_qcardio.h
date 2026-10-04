@@ -224,7 +224,7 @@ struct Predicting
         const int actualNeg    = tn + fp;
         const int predictedPos = tp + fp;
 
-        se  = (actualPos    > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos)    : 0.0f;
+        se  = (actualPos    > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos)    : -1.0f;
         p   = (predictedPos > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(predictedPos) : 0.0f;
         fpr = (actualNeg    > 0) ? 100.0f * static_cast<float>(fp) / static_cast<float>(actualNeg)    : 0.0f;
 

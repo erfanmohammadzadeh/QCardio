@@ -139,6 +139,10 @@ bool CSV::saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes)
 
     for (const FileProcessResult &res : fileProcessRes.fileProcessResult)
     {
+        QString setext;
+        if(res.pvcPredict.se < 0) setext = "nan";
+        else setext = QString::number(res.pvcPredict.se);
+
         out103 << res.fileName << ","
                << res.beatTypeMap[ArrhythmiaType::NormalArr][ArrhythmiaType::NormalArr]           << ","
                << res.beatTypeMap[ArrhythmiaType::VentricularArr][ArrhythmiaType::NormalArr]      << ","
@@ -150,7 +154,7 @@ bool CSV::saveProcessFileResult(const AnalyseFileProcessResult &fileProcessRes)
                << res.qrsPredict.p     << ","
                << res.normalPredict.se << ","
                << res.normalPredict.p  << ","
-               << res.pvcPredict.se    << ","
+               << setext               << ","
                << res.pvcPredict.p     << ","
                << res.pvcPredict.tn    << ","
                << res.pvcPredict.fpr   <<
