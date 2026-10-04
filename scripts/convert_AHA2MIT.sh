@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# ============================================================
-# AHA to MIT-BIH Batch Converter with Annotation Generation
-# ============================================================
+# =======================================================================
+# Old AHA Template to MIT-BIH Batch Converter with Annotation Generation
+# =======================================================================
 
-SRC="/home/amvaj-negar/Projects/DB/AHA Database Series 1/ECG Data"
-OUT="/home/amvaj-negar/Projects/DB/AHA Database Series 1/ECG Data/AHA"
+SRC="/home/user/Projects/DB/AHA Database Series 1/ECG Data"
+OUT="/home/user/Projects/DB/AHA Database Series 1/ECG Data/AHA"
 
 # --- Conversion ---
 mkdir -p "$OUT"
