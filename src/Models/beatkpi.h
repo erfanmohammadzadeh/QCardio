@@ -8,11 +8,11 @@ public:
     BeatKPI(ResultMatrix beatMatrix = ResultMatrix(MatrixType::BeatType));
 
     ResultMatrix inputData = ResultMatrix(MatrixType::BeatType);
+    Predicting m_QrsPrediction;
     Predicting m_NPrediction;
     Predicting m_PVCPrediction;
+    Predicting m_SvebPrediction;
 
-    void calcNormalKPI();
-    void calcPVCKPI();
     void run();
 
 private:

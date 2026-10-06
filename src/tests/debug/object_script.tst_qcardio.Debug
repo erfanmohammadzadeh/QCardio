@@ -1,6 +1,10 @@
 debug/tst_qcardio.o
+debug/aamiclass.o
 debug/beatkpi.o
+debug/beatmatcher.o
 debug/csv.o
+debug/ec57metrics.o
+debug/performancereport.o
 debug/directoryvalidator.o
 debug/resultmatrix.o
 debug/sheetanalyser.o

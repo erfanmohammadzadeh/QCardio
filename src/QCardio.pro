@@ -16,8 +16,13 @@ UI_DIR      = $$OUT_PWD/ui
 SOURCES += \
     Controllers/appcontroller.cpp \
     Controllers/signalviewcontroller.cpp \
+    Models/aamiclass.cpp \
+    Models/beattestprofile.cpp \
     Models/beatkpi.cpp \
+    Models/beatmatcher.cpp \
     Models/csv.cpp \
+    Models/ec57metrics.cpp \
+    Models/performancereport.cpp \
     Models/directoryvalidator.cpp \
     Models/resultmatrix.cpp \
     Models/sheetanalyser.cpp \
@@ -28,6 +33,7 @@ SOURCES += \
     Services/logservice.cpp \
     Services/settingsservice.cpp \
     Services/wfdbservice.cpp \
+    Views/comparesettingsdialog.cpp \
     Views/signalviewwidget.cpp \
     Views/mainwindow.cpp \
     main.cpp \
@@ -40,8 +46,13 @@ SOURCES += \
 HEADERS += \
     Controllers/appcontroller.h \
     Controllers/signalviewcontroller.h \
+    Models/aamiclass.h \
+    Models/beattestprofile.h \
     Models/beatkpi.h \
+    Models/beatmatcher.h \
     Models/csv.h \
+    Models/ec57metrics.h \
+    Models/performancereport.h \
     Models/define.h \
     Models/directoryvalidator.h \
     Models/global_qcardio.h \
@@ -55,6 +66,7 @@ HEADERS += \
     Services/logservice.h \
     Services/settingsservice.h \
     Services/wfdbservice.h \
+    Views/comparesettingsdialog.h \
     Views/signalviewwidget.h \
     Views/mainwindow.h \
     ThirdParty/wfdb/ecgcodes.h \

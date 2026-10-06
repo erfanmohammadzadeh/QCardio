@@ -41,15 +41,11 @@ private:
     bool CompareSampleIdxAndType();
     bool saveResult();
     bool loadCSVData();
-    bool isTypeMatch(const quint8& ref, const quint8& det);
     AnalyseCfg m_analyseCfg;
 
     ResultMatrix m_beatTypeMap = ResultMatrix(MatrixType::BeatType);
-    ResultMatrix m_pvcRunMap = ResultMatrix(MatrixType::RunEpisode);
-    ResultMatrix m_svtRunMap = ResultMatrix(MatrixType::RunEpisode);
-
-    QTime convertSampleCountToTimeInTime(quint64 sampleCount, quint16 samplingTime);
-
 };
+
+
 
 #endif // SHEETANALYSER_H

@@ -2,6 +2,8 @@
 #define GLOBAL_QCARDIO_H
 
 #include "wfdb/ecgcodes.h"
+#include "aamiclass.h"
+#include "beattestprofile.h"
 #include <QString>
 #include <QDir>
 #include <QMessageBox>
@@ -153,12 +155,12 @@ struct SheetResult
     QVector<int> sampleIndexList1;
     QVector<quint8> typeList1;
     QVector<int> alignedList1;
-    QVector<quint8> typeAlignList1;
+    QVector<int> typeAlignList1;
 
     QVector<int> sampleIndexList2;
     QVector<quint8> typeList2;
     QVector<int> alignedList2;
-    QVector<quint8> typeAlignList2;
+    QVector<int> typeAlignList2;
 
     QVector<int> difIndexList;
     QVector<bool> difTypeList;
@@ -199,54 +201,89 @@ struct AnalyseCfg
     QStringList csvPath2;
     QString outputPath;
     int sampleRate = 178;
-    int compareOfset = 4;
+    // First sample of the test period. 0 scores the whole file.
+    // The compare screen sets this to 5 minutes, per IEC 60601-2-47:2012.
+    int compareOfset = 0;
+    BeatTestProfile profile;
 };
 
+// One detection statistic.
+// Sensitivity uses tp and fn. Positive predictivity uses ppTp and ppFp.
+// For QRS and VEB those numerators are the same count. For couplets and runs
+// IEC 60601-2-47 counts reference runs and algorithm runs separately, so the
+// two numerators differ and splitPredictivity is set.
+// A rate of -1 means the denominator was zero and the statistic is undefined.
 struct Predicting
 {
-    int   fn = 0;
-    int   fp = 0;
-    int   tp = 0;
-    int   tn = 0;
+    int fn = 0;
+    int fp = 0;
+    int tp = 0;
+    int tn = 0;
+    int ppTp = 0;
+    int ppFp = 0;
+    bool splitPredictivity = false;
 
-    float rfn = 0.0f;
-    float rfp = 0.0f;
-    float rtp = 0.0f;
-    float rtn = 0.0f;
+    float rfn = -1.0f;
+    float rfp = -1.0f;
+    float rtp = -1.0f;
+    float rtn = -1.0f;
 
-    float se  = 0.0f;
-    float p   = 0.0f;
-    float fpr = 0.0f;
+    float se = -1.0f;
+    float p = -1.0f;
+    float fpr = -1.0f;
 
-    void calcParams()
+    void calcParams(bool computeFalsePositiveRate = true)
     {
-        const int actualPos    = tp + fn;
-        const int actualNeg    = tn + fp;
-        const int predictedPos = tp + fp;
+        se = ec57Percent(tp, tp + fn);
+        rfn = ec57Percent(fn, tp + fn);
+        rtp = se;
 
-        se  = (actualPos    > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos)    : -1.0f;
-        p   = (predictedPos > 0) ? 100.0f * static_cast<float>(tp) / static_cast<float>(predictedPos) : 0.0f;
-        fpr = (actualNeg    > 0) ? 100.0f * static_cast<float>(fp) / static_cast<float>(actualNeg)    : 0.0f;
+        if (!splitPredictivity) {
+            ppTp = tp;
+            ppFp = fp;
+        }
+        p = ec57Percent(ppTp, ppTp + ppFp);
 
-        rfn = 100.0f * static_cast<float>(fn) / static_cast<float>(actualPos);
-        rfp = 100.0f * static_cast<float>(fp) / static_cast<float>(actualNeg);
-        rtp = 100.0f * static_cast<float>(tp) / static_cast<float>(actualPos);
-        rtn = 100.0f * static_cast<float>(tn) / static_cast<float>(actualNeg);
+        if (computeFalsePositiveRate) {
+            fpr = ec57Percent(fp, tn + fp);
+            rfp = fpr;
+            rtn = ec57Percent(tn, tn + fp);
+        } else {
+            fpr = -1.0f;
+            rfp = -1.0f;
+            rtn = -1.0f;
+        }
     }
+
     void clear()
     {
         fn = 0;
         fp = 0;
         tp = 0;
         tn = 0;
-        rfn = 0.0f;
-        rfp = 0.0f;
-        rtp = 0.0f;
-        rtn = 0.0f;
-        se  = 0.0f;
-        p   = 0.0f;
-        fpr = 0.0f;
+        ppTp = 0;
+        ppFp = 0;
+        splitPredictivity = false;
+        rfn = -1.0f;
+        rfp = -1.0f;
+        rtp = -1.0f;
+        rtn = -1.0f;
+        se = -1.0f;
+        p = -1.0f;
+        fpr = -1.0f;
     }
+};
+
+// Gross weights each event equally. Average weights each record equally.
+struct IecRatePair {
+    float gross = -1.0f;
+    float average = -1.0f;
+};
+
+struct IecDetectionSummary {
+    IecRatePair sensitivity;
+    IecRatePair positivePredictivity;
+    IecRatePair falsePositiveRate;
 };
 
 enum ArrhythmiaType
@@ -284,110 +321,43 @@ struct FileProcessResult
     Predicting svt_shortRun;
     Predicting svt_longRun;
     Predicting AF_duration;
-    int   missedBeatCount = 0;
-    float normalMissed = 0.0;
-    float pvcMissed = 0.0;
+    int missedBeatCount = 0;
+    float normalMissed = 0.0f;
+    float pvcMissed = 0.0f;
     quint32 totalShutdownSqrs = 0;
     QTime totalShutdown;
     BeatMatrixType beatTypeMap = {{0}};
-    int compareOfset = 4;
+    quint32 aamiBeat[AamiClassCount][AamiClassCount] = {};
+    quint32 vRunSensitivity[IecRunBinCount][IecRunBinCount] = {};
+    quint32 vRunPredictivity[IecRunBinCount][IecRunBinCount] = {};
+    quint32 sRunSensitivity[IecRunBinCount][IecRunBinCount] = {};
+    quint32 sRunPredictivity[IecRunBinCount][IecRunBinCount] = {};
+    BeatTestProfile profile;
+    quint32 testBeat[TestBeatClassCount][TestBeatClassCount] = {};
+    Predicting classPredict[ClassUnknown + 1] = {};
+    int compareOfset = 0;
     int totalBeat = 0;
 
-    void clear()
-    {
-        qrsPredict.clear();
-        normalPredict.clear();
-        pvcPredict.clear();
-        // svtPredict.clear();
-        AFPredict.clear();
-        pvc_couplet.clear();
-        pvc_shortRun.clear();
-        pvc_longRun.clear();
-        svt_couplet.clear();
-        svt_shortRun.clear();
-        svt_longRun.clear();
-        AF_duration.clear();
-        missedBeatCount = 0;
-        normalMissed = 0.0;
-        pvcMissed = 0.0;
-        totalShutdownSqrs=0;
-        compareOfset = 4;
-        totalBeat = 0;
-    }
+    void clear();
 };
 
 struct AnalyseFileProcessResult
 {
     QVector<FileProcessResult> fileProcessResult;
-    float avgSePvc = 0.0;
-    float avgSeQrs = 0.0;
-    float avgSeNor = 0.0;
-    float avgPPPvc = 0.0;
-    float avgPPQrs = 0.0;
-    float avgPPNor = 0.0;
-    int   cntSePvc = 0;
-    int   cntSeQrs = 0;
-    int   cntSeNor = 0;
-    int   cntPPPvc = 0;
-    int   cntPPQrs = 0;
-    int   cntPPNor = 0;
+    BeatTestProfile profile;
+    IecDetectionSummary classSummary[ClassUnknown + 1];
+    IecDetectionSummary qrs;
+    IecDetectionSummary veb;
+    IecDetectionSummary sveb;
+    IecDetectionSummary vCouplet;
+    IecDetectionSummary vShortRun;
+    IecDetectionSummary vLongRun;
+    IecDetectionSummary sCouplet;
+    IecDetectionSummary sShortRun;
+    IecDetectionSummary sLongRun;
 
-    void calcParam()
-    {
-        float sumSePvc = 0.0;
-        float sumSeQrs = 0.0;
-        float sumSeNor = 0.0;
-        float sumPPPvc = 0.0;
-        float sumPPQrs = 0.0;
-        float sumPPNor = 0.0;
-        for(const auto& file: fileProcessResult)
-        {
-            sumSePvc += addVal(file.pvcPredict.se, cntSePvc);
-            sumSeQrs += addVal(file.qrsPredict.se, cntSeQrs);
-            sumSeNor += addVal(file.normalPredict.se, cntSeNor);
-            sumPPPvc += addVal(file.pvcPredict.p, cntPPPvc);
-            sumPPQrs += addVal(file.qrsPredict.p, cntPPQrs);
-            sumPPNor += addVal(file.normalPredict.p, cntPPNor);
-        }
-        avgSePvc = divideNZ(sumSePvc, cntSePvc);
-        avgSeNor = divideNZ(sumSeNor, cntSeNor);
-        avgSeQrs = divideNZ(sumSeQrs, cntSeQrs);
-        avgPPPvc = divideNZ(sumPPPvc, cntPPPvc);
-        avgPPNor = divideNZ(sumPPQrs, cntPPQrs);
-        avgPPQrs = divideNZ(sumPPNor, cntPPNor);
-    }
-
-    float divideNZ(const float& value, const int& count)
-    {
-        if(count == 0) return 0.0;
-        return value/static_cast<float>(count);
-    }
-
-    float addVal(const float& val, int& cnt)
-    {
-        if(val > 0)
-        {
-            cnt++;
-            return val;
-        }
-        else
-            return 0.0;
-    }
-
-    void clear()
-    {
-        for(int i = 0; i < fileProcessResult.size(); i++)
-            fileProcessResult[i].clear();
-        fileProcessResult.clear();
-        fileProcessResult.squeeze();
-
-        avgSePvc = 0.0;
-        avgSeQrs = 0.0;
-        avgSeNor = 0.0;
-        avgPPPvc = 0.0;
-        avgPPQrs = 0.0;
-        avgPPNor = 0.0;
-    }
+    void calcParam();
+    void clear();
 };
 
 const static QStringList datasetName = {"MIT-BIH", "AHA", "ESC", "CU"};
@@ -437,11 +407,5 @@ static ArrhythmiaType convertTypeToArrhythmia(int index)
         break;
     }
 }
-
-static const QSet<int> NormalBeat = {NORMAL, LBBB, RBBB, BBB, SVPB, PFUS, RHYTHM};
-static const QSet<int> PVCBeat    = {PVC, FUSION, PACE, PFUS, FLWAV, VESC, RHYTHM};
-static const QSet<int> NOISEBeat  = {NOISE, UNKNOWN};
-
-
 
 #endif // GLOBAL_QCARDIO_H

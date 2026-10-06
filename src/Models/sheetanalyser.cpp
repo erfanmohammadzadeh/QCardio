@@ -1,6 +1,10 @@
 #include "sheetanalyser.h"
-#include "Models/beatkpi.h"
-#include "wfdb/ecgcodes.h"
+#include "Models/beatmatcher.h"
+#include "Models/ec57metrics.h"
+
+#include <QDebug>
+
+#include <cstring>
 
 SheetAnalyser::SheetAnalyser(QObject *parent,
                              QStringList sheetPathList,
@@ -11,27 +15,24 @@ SheetAnalyser::SheetAnalyser(QObject *parent,
     , m_outputPath(std::move(analyseCfg.outputPath))
     , m_processFileName(processFileName)
     , m_analyseCfg(analyseCfg)
-
 {
 }
+
 bool SheetAnalyser::processSheets()
 {
     if (m_sheetPathList.size() < 2) {
         qWarning() << "Compare requires two CSV files";
         return false;
     }
-    if(!loadCSVData())
-    {
+    if (!loadCSVData()) {
         QMessageBox::critical(nullptr, "Load Error", "Load data from csv file failed.");
         return false;
     }
-    if(!CompareSampleIdxAndType())
-    {
+    if (!CompareSampleIdxAndType()) {
         QMessageBox::critical(nullptr, "Compare Error", "Compare process failed.");
         return false;
     }
-    if(!saveResult())
-    {
+    if (!saveResult()) {
         QMessageBox::critical(nullptr, "Save Error", "Save process failed.");
     }
     return true;
@@ -44,162 +45,91 @@ FileProcessResult SheetAnalyser::fileProcessRes() const
 
 bool SheetAnalyser::CompareSampleIdxAndType()
 {
-    try
-    {
-        const int csv1Size = m_sheetRes.sampleIndexList1.size();
-        const int csv2Size = m_sheetRes.sampleIndexList2.size();
-
-        if (csv1Size == 0 || csv2Size == 0) {
-            qDebug() << "Empty sample lists!";
-            return false;
-        }
-
-        constexpr int MAX_DIFF_THRESHOLD = 300;
-        constexpr int VALID_DIFF_MAX     = 100;
-        constexpr int VALID_DIFF_MIN     = 0;
-        constexpr int INVALID_INDEX      = -1;
-
-        m_fileProcessRes.clear();
-        m_fileProcessRes.fileName = m_processFileName;
-
-        // Track which csv2 entries have already been consumed by an alignment.
-        std::vector<bool> used2(csv2Size, false);
-
-        int lastMatchIndex = -1;
-
-        m_fileProcessRes.totalBeat = csv1Size;
-        for (int i = 0; i < csv1Size; ++i)
-        {
-            // --- find best unused match in csv2 ---
-            int minDif          = MAX_DIFF_THRESHOLD;
-            int bestMatchIndex  = INVALID_INDEX;
-
-            for (int j = 0; j < csv2Size; ++j)
-            {
-                if (used2[j]) continue;
-                if (j <= lastMatchIndex) continue;   // enforce monotonic alignment
-
-                const int currentDif = m_sheetRes.getDif(i, j);
-                if (currentDif < minDif)
-                {
-                    minDif         = currentDif;
-                    bestMatchIndex = j;
-                }
-            }
-
-
-            const bool validMatch =
-                (bestMatchIndex != INVALID_INDEX) &&
-                (minDif >= VALID_DIFF_MIN) &&
-                (minDif <  VALID_DIFF_MAX);
-
-            if (validMatch)
-            {
-                // --- record FP rows for any csv2 beats skipped since last match ---
-                for (int gap = lastMatchIndex + 1; gap < bestMatchIndex; ++gap)
-                {
-                    m_sheetRes.alignedList1.append(INVALID_INDEX);
-                    m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(gap));
-                    m_sheetRes.difIndexList.append(INVALID_INDEX);
-                    m_sheetRes.typeAlignList1.append(INVALID_INDEX);
-                    m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(gap));
-                    m_sheetRes.difTypeList.append(false);
-
-                    // Predicted beat with no matching reference beat => FP
-                    if(m_analyseCfg.compareOfset < i)
-                    {
-                        m_fileProcessRes.qrsPredict.fp++;
-
-                        // Feed the classifier: reference = Unknown, predicted = actual
-                        m_beatTypeMap.insertBeat(UNKNOWN,
-                                                 m_sheetRes.typeList2.at(gap));
-                    }
-                }
-
-                // --- record the aligned (TP) pair ---
-                m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
-                m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(bestMatchIndex));
-                m_sheetRes.difIndexList.append(minDif);
-                m_sheetRes.typeAlignList1.append(m_sheetRes.typeList1.at(i));
-                m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(bestMatchIndex));
-                m_sheetRes.difTypeList.append(isTypeMatch(m_sheetRes.typeList1.at(i),m_sheetRes.typeList2.at(bestMatchIndex)));
-
-                if(m_analyseCfg.compareOfset < i)
-                {
-                    m_fileProcessRes.qrsPredict.tp++;
-
-                    m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
-                                             m_sheetRes.typeList2.at(bestMatchIndex));
-                }
-
-                used2[bestMatchIndex] = true;
-                lastMatchIndex        = bestMatchIndex;
-            }
-            else
-            {
-                // --- no usable match: reference beat with no detection => FN ---
-                m_sheetRes.alignedList1.append(m_sheetRes.sampleIndexList1.at(i));
-                m_sheetRes.alignedList2.append(INVALID_INDEX);
-                m_sheetRes.difIndexList.append(INVALID_INDEX);
-                m_sheetRes.typeAlignList1.append(m_sheetRes.typeList1.at(i));
-                m_sheetRes.typeAlignList2.append(INVALID_INDEX);
-                m_sheetRes.difTypeList.append(false);
-
-                if(m_analyseCfg.compareOfset < i)
-                {
-                    m_fileProcessRes.qrsPredict.fn++;
-
-                    // Feed the classifier: reference = actual, predicted = Unknown
-                    m_beatTypeMap.insertBeat(m_sheetRes.typeList1.at(i),
-                                             UNKNOWN);
-
-                    m_fileProcessRes.missedBeatCount++;
-                    if(i > 1)
-                        m_fileProcessRes.totalShutdownSqrs += abs(m_sheetRes.sampleIndexList1.at(i)-m_sheetRes.sampleIndexList1.at(i-1));
-                    if(NormalBeat.contains(m_sheetRes.typeList1.at(i)))
-                        m_fileProcessRes.normalMissed++;
-                    else if(PVCBeat.contains(m_sheetRes.typeList1.at(i)))
-                        m_fileProcessRes.pvcMissed++;
-                }
-            }
-        }
-
-        // --- trailing csv2 beats never matched => FP ---
-        for (int j = lastMatchIndex + 1; j < csv2Size; ++j)
-        {
-            if (used2[j]) continue;
-
-            m_sheetRes.alignedList1.append(INVALID_INDEX);
-            m_sheetRes.alignedList2.append(m_sheetRes.sampleIndexList2.at(j));
-            m_sheetRes.difIndexList.append(INVALID_INDEX);
-            m_sheetRes.typeAlignList1.append(INVALID_INDEX);
-            m_sheetRes.typeAlignList2.append(m_sheetRes.typeList2.at(j));
-            m_sheetRes.difTypeList.append(false);
-
-            if(m_analyseCfg.compareOfset < j)
-            {
-                m_fileProcessRes.qrsPredict.fp++;
-                m_beatTypeMap.insertBeat(UNKNOWN, m_sheetRes.typeList2.at(j));
-            }
-        }
-
-        // --- finalize KPIs ---
-        BeatKPI beatKpi(m_beatTypeMap);
-        beatKpi.run();
-
-        m_fileProcessRes.qrsPredict.calcParams();
-        std::memcpy(m_fileProcessRes.beatTypeMap,
-                    m_beatTypeMap.getMatrix(),
-                    sizeof(m_fileProcessRes.beatTypeMap));
-        m_fileProcessRes.normalPredict = beatKpi.m_NPrediction;
-        m_fileProcessRes.pvcPredict    = beatKpi.m_PVCPrediction;
-        m_fileProcessRes.totalShutdown = convertSampleCountToTimeInTime(m_fileProcessRes.totalShutdownSqrs, m_analyseCfg.sampleRate);
-        m_fileProcessRes.compareOfset = m_analyseCfg.compareOfset;
-    }
-    catch (...)
-    {
+    if (m_sheetRes.sampleIndexList1.isEmpty() || m_sheetRes.sampleIndexList2.isEmpty()) {
+        qDebug() << "Empty sample lists!";
         return false;
     }
+
+    m_fileProcessRes.clear();
+    m_fileProcessRes.fileName = m_processFileName;
+    m_fileProcessRes.compareOfset = m_analyseCfg.compareOfset;
+
+    const BeatMatchResult matched = matchBeats(m_sheetRes.sampleIndexList1,
+                                               m_sheetRes.typeList1,
+                                               m_sheetRes.sampleIndexList2,
+                                               m_sheetRes.typeList2,
+                                               m_analyseCfg.sampleRate,
+                                               m_analyseCfg.compareOfset);
+
+    for (const AlignedPair &pair : matched.pairs) {
+        m_sheetRes.alignedList1.append(pair.refSample);
+        m_sheetRes.alignedList2.append(pair.testSample);
+        m_sheetRes.difIndexList.append(pair.sampleDelta);
+        m_sheetRes.typeAlignList1.append(pair.refType);
+        m_sheetRes.typeAlignList2.append(pair.testType);
+        m_sheetRes.difTypeList.append(pair.typeMatch);
+        m_beatTypeMap.addComparison(pair.refType, pair.testType);
+
+        if (pair.refType >= 0 && pair.testType < 0) {
+            ++m_fileProcessRes.missedBeatCount;
+            const AamiClass missed = aamiClassOf(pair.refType);
+            if (missed == AamiN)
+                ++m_fileProcessRes.normalMissed;
+            else if (missed == AamiV)
+                ++m_fileProcessRes.pvcMissed;
+        }
+    }
+
+    quint32 beatMatrix[AamiClassCount][AamiClassCount];
+    m_beatTypeMap.copyAami(beatMatrix);
+    const Ec57BeatScores beatScores = Ec57BeatScores::fromMatrix(beatMatrix);
+    m_fileProcessRes.qrsPredict = beatScores.qrs;
+    m_fileProcessRes.normalPredict = beatScores.normal;
+    m_fileProcessRes.pvcPredict = beatScores.veb;
+    m_fileProcessRes.svtPredict = beatScores.sveb;
+
+    m_fileProcessRes.profile = m_analyseCfg.profile;
+    const QVector<int> activeClasses = m_analyseCfg.profile.activeClasses();
+    for (const AlignedPair &pair : matched.pairs)
+        accumulateTestBeat(m_fileProcessRes.testBeat, pair.refType, pair.testType, m_analyseCfg.profile);
+    for (int beatClass : activeClasses) {
+        const TestClassCounts counts = scoreTestClass(m_fileProcessRes.testBeat, beatClass, activeClasses);
+        Predicting &stat = m_fileProcessRes.classPredict[beatClass];
+        stat.tp = counts.tp;
+        stat.fn = counts.fn;
+        stat.fp = counts.fp;
+        stat.tn = counts.tn;
+        stat.calcParams(true);
+    }
+    m_beatTypeMap.copyAami(m_fileProcessRes.aamiBeat);
+    std::memcpy(m_fileProcessRes.beatTypeMap, m_beatTypeMap.getMatrix(), sizeof(m_fileProcessRes.beatTypeMap));
+
+    fillRunMatrices(matched.referenceBeats,
+                    matched.testBeats,
+                    m_analyseCfg.sampleRate,
+                    true,
+                    m_fileProcessRes.vRunSensitivity,
+                    m_fileProcessRes.vRunPredictivity);
+    fillRunMatrices(matched.referenceBeats,
+                    matched.testBeats,
+                    m_analyseCfg.sampleRate,
+                    false,
+                    m_fileProcessRes.sRunSensitivity,
+                    m_fileProcessRes.sRunPredictivity);
+
+    const Ec57RunScores ventricularRuns = Ec57RunScores::fromMatrices(m_fileProcessRes.vRunSensitivity,
+                                                                      m_fileProcessRes.vRunPredictivity);
+    const Ec57RunScores supraventricularRuns = Ec57RunScores::fromMatrices(m_fileProcessRes.sRunSensitivity,
+                                                                           m_fileProcessRes.sRunPredictivity);
+    m_fileProcessRes.pvc_couplet = ventricularRuns.couplet;
+    m_fileProcessRes.pvc_shortRun = ventricularRuns.shortRun;
+    m_fileProcessRes.pvc_longRun = ventricularRuns.longRun;
+    m_fileProcessRes.svt_couplet = supraventricularRuns.couplet;
+    m_fileProcessRes.svt_shortRun = supraventricularRuns.shortRun;
+    m_fileProcessRes.svt_longRun = supraventricularRuns.longRun;
+
+    m_fileProcessRes.totalBeat = matched.referenceBeats.size();
+    m_fileProcessRes.totalShutdown = QTime(0, 0, 0);
     return true;
 }
 
@@ -224,28 +154,4 @@ bool SheetAnalyser::loadCSVData()
     m_sheetRes.sampleIndexList2 = csv2.csvFormat().sampleIndex;
     m_sheetRes.typeList2 = csv2.csvFormat().type;
     return true;
-}
-
-bool SheetAnalyser::isTypeMatch(const quint8 &ref, const quint8 &det)
-{
-    if (NormalBeat.contains(ref) && NormalBeat.contains(det)) {
-        return true;
-    }
-    else if (PVCBeat.contains(ref) && PVCBeat.contains(det)) {
-        return true;
-    }
-    else if (NOISEBeat.contains(ref) && NOISEBeat.contains(det)) {
-        return true;
-    }
-    else
-        return false;
-}
-
-QTime SheetAnalyser::convertSampleCountToTimeInTime(quint64 sampleCount, quint16 samplingTime)
-{
-    QTime time;
-    time.setHMS(0,0,0,0);
-    quint64 duration    = sampleCount/samplingTime;
-    time  = time.addSecs(duration%(24*3600));
-    return  time;
 }

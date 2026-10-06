@@ -246,14 +246,11 @@ QLineEdit:disabled, QSpinBox:disabled, QDoubleSpinBox:disabled, QComboBox:disabl
 
 /* ---------- COMBO BOX DROPDOWN ---------- */
 QComboBox::drop-down {
+    subcontrol-origin: padding;
+    subcontrol-position: center right;
+    width: 22px;
     border: none;
-    width: 24px;
-}
-
-QComboBox::down-arrow {
-    image: url(:/icons/down_arrow.png);
-    width: 12px;
-    height: 12px;
+    border-left: 1px solid #2e3640;
 }
 
 QComboBox QAbstractItemView {
@@ -290,8 +287,7 @@ QCheckBox::indicator {
 
 QCheckBox::indicator:checked {
     background-color: #3a6ea5;
-    border-color: #4a8ec5;
-    image: url(:/icons/check.png);
+    border-color: #90caf9;
 }
 
 QCheckBox::indicator:hover {
@@ -369,44 +365,30 @@ QProgressBar[critical="true"]::chunk {
 }
 
 /* ---------- TAB WIDGET ---------- */
-/* Make tabs vertical on the left */
-/* Make tabs vertical on the left */
-QTabWidget {
-    /* This makes tabs appear on the left side */
-    tab-position: west;
-}
-
 QTabWidget::pane {
     background-color: #1a2028;
     border: 1px solid #2e3640;
     border-radius: 8px;
-    padding: 8px;
-    /* Left border radius adjustment for vertical tabs */
-    border-top-left-radius: 0px;
-    border-bottom-left-radius: 0px;
+    top: -1px;
 }
 
 QTabBar::tab {
     background-color: #252c36;
     color: #b0bcc8;
     border: 1px solid #2e3640;
-    border-right: none;           /* No right border to connect with pane */
+    border-bottom: none;
     border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-    border-top-right-radius: 0px; /* No right rounding */
-    border-bottom-right-radius: 0px;
-    padding: 5px 8px;           /* More vertical padding, less horizontal */
-    margin-bottom: 2px;           /* Space between vertical tabs */
-    margin-right: -1px;           /* Overlap pane border */
-    min-height: 30px;             /* Minimum height for vertical tabs */
-    text-align: left;             /* Align text to left */
+    border-top-right-radius: 6px;
+    padding: 8px 14px;
+    margin-right: 2px;
+    min-width: 10px;
+	min-height: 80px;
 }
 
 QTabBar::tab:selected {
     background-color: #1a6ea5;
     color: #ffffff;
     border-color: #3a7ea5;
-    border-right: none;
 }
 
 QTabBar::tab:hover:!selected {
@@ -540,20 +522,34 @@ QToolTip {
     border-radius: 4px;
 }
 
-/* ---------- RESPONSIVE FONT FOR HIGH-DPI ---------- */
-@media (min-resolution: 144dpi) {
-    * {
-        font-size: 14px;
-    }
-    QLabel[heading="true"] {
-        font-size: 22px;
-    }
-    QLabel[value="true"] {
-        font-size: 26px;
-    }
+/* ---------- SPLITTER, SCROLL, HINTS ---------- */
+QSplitter::handle {
+    background-color: #2e3640;
+    width: 6px;
+    margin: 4px 0;
+    border-radius: 2px;
 }
 
-/* ---------- TOUCH / MOBILE FRIENDLY ---------- */
+QScrollArea {
+    border: none;
+    background-color: transparent;
+}
+
+QScrollArea > QWidget > QWidget {
+    background-color: transparent;
+}
+
+QLabel#hintLabel {
+    color: #8ea0b0;
+}
+
+QLabel#labelVersion {
+    font-size: 16px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+/* ---------- CONTROLS ---------- */
 QPushButton, QToolButton {
     min-height: 32px;
 }

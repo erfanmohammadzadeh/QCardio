@@ -14,6 +14,7 @@
 #include <QTextEdit>
 #include <QListWidgetItem>
 #include <Models/define.h>
+#include <Models/beattestprofile.h>
 #include <QProgressBar>
 #include <QDesktopServices>
 
@@ -93,6 +94,7 @@ private:
     QString m_databasePath;
 
     QString m_selectedPath;
+    BeatTestProfile m_compareProfile;
 
 Q_SIGNALS:
     void sigReadDataRequested(const SignalViewParameters& params);

@@ -1,11 +1,14 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
+#include "ui/ui_mainwindow.h"
 
+#include <QApplication>
 #include <QCheckBox>
 #include <QCloseEvent>
 #include <QComboBox>
 #include <QDirIterator>
 #include <QSlider>
+
+#include "Views/comparesettingsdialog.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,6 +16,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->tabWidget->setCurrentIndex(0);
+    ui->splitterMain->setStretchFactor(0, 1);
+    ui->splitterMain->setStretchFactor(1, 0);
+    ui->pushButtonRead->setProperty("primary", true);
+    ui->pushButtonExport->setProperty("primary", true);
+    ui->pushButtonCompare->setProperty("primary", true);
     loadStyle();
     ui->labelVersion->setText(SOFTWARE_VERSION_STR);
     ui->comboBoxDatabaseName->addItems(datasetName);
@@ -74,8 +82,7 @@ ExprotSetting::ExportMethod MainWindow::getExportMethod()
 {
     if(ui->radioButtonRec7->isChecked())
         return ExprotSetting::ExportMethod::RC7;
-    else if(ui->radioButtonRawSample->isChecked())
-        return ExprotSetting::ExportMethod::RawSample;
+    return ExprotSetting::ExportMethod::RawSample;
 }
 
 bool MainWindow::readSignalSetting(SignalViewParameters& params)
@@ -207,7 +214,7 @@ void MainWindow::loadStyle()
     QFile styleFile(":/Res/style/style.qss");
     styleFile.open(QFile::ReadOnly);
     QString style = QLatin1String(styleFile.readAll());
-    setStyleSheet(style);
+    qApp->setStyleSheet(style);
 }
 
 void MainWindow::enableUIBtn(const bool& isEnable)
@@ -370,12 +377,19 @@ void MainWindow::on_pushButtonCompare_clicked()
         return;
     }
 
+    CompareSettingsDialog settings(this);
+    settings.setProfile(m_compareProfile);
+    if (settings.exec() != QDialog::Accepted)
+        return;
+    m_compareProfile = settings.profile();
+
     AnalyseCfg analyseCfg;
     analyseCfg.csvPath1 = m_CSV1FilePath;
     analyseCfg.csvPath2 = m_CSV2FilePath;
     analyseCfg.outputPath = path;
     analyseCfg.sampleRate = ui->spinBoxTargetFreq->value();
     analyseCfg.compareOfset = ui->spinBoxCompareOfset->value();
+    analyseCfg.profile = m_compareProfile;
 
     enableUIBtn(false);
     Q_EMIT sigAnalyseRequested(analyseCfg);
@@ -383,15 +397,14 @@ void MainWindow::on_pushButtonCompare_clicked()
 
 void MainWindow::on_comboBoxDatabaseName_currentTextChanged(const QString &arg1)
 {
-    if(arg1 == datasetName[1])
-    {
-        ui->spinBoxSourceFreq->setValue(250);
-        ui->spinBoxCompareOfset->setValue(460);
-    }
-    else if(arg1 == datasetName[0])
+    if (arg1 == datasetName[0])
         ui->spinBoxSourceFreq->setValue(360);
-    else
-        ui->spinBoxCompareOfset->setValue(4);
+    else if (arg1 == datasetName[1] || arg1 == datasetName[2] || arg1 == datasetName[3])
+        ui->spinBoxSourceFreq->setValue(250);
+
+    // IEC 60601-2-47:2012 excludes the first 5 minutes (the learning period).
+    const int sampleRate = ui->spinBoxTargetFreq->value();
+    ui->spinBoxCompareOfset->setValue(IecLearningPeriodSeconds * sampleRate);
 }
 
 

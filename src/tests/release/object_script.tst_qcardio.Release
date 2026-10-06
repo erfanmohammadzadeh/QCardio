@@ -1,6 +1,10 @@
 release/tst_qcardio.o
+release/aamiclass.o
 release/beatkpi.o
+release/beatmatcher.o
 release/csv.o
+release/ec57metrics.o
+release/performancereport.o
 release/directoryvalidator.o
 release/resultmatrix.o
 release/sheetanalyser.o

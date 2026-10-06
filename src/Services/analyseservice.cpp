@@ -21,6 +21,7 @@ bool AnalyseService::run()
 
     bool allSucceeded = true;
     AnalyseFileProcessResult fileResult;
+    fileResult.profile = m_analyseCfg.profile;
     for (int i = 0; i < processFile; ++i) {
         QStringList pairFile;
         pairFile << m_analyseCfg.csvPath1[i] << m_analyseCfg.csvPath2[i];

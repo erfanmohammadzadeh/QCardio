@@ -18,15 +18,19 @@ private:
     quint32 matrixRun[6][6] = {{0}};
     quint32 m_difBeatType[ArrhythmiaType::ArrhythmiaTypeCount];
     MatrixType m_matrixType;
+    quint32 m_aami[AamiClassCount][AamiClassCount] = {};
 
 public:
     void insertBeat(const int &ref, int detected);
+    // refAnn or detAnn below zero is an unmatched beat (class O).
+    void addComparison(int refAnn, int detAnn);
+    void copyAami(quint32 dest[AamiClassCount][AamiClassCount]) const;
     int totalBeats() const
     {
         int total = 0;
-        for (const auto& row : matrixBeatType)
-            for (const auto& cell : row)
-                total += cell;
+        for (const auto &row : m_aami)
+            for (quint32 cell : row)
+                total += static_cast<int>(cell);
         return total;
     }
 };

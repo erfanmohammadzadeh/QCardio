@@ -11,6 +11,8 @@
 #include "Models/global_qcardio.h"
 #include "Models/resultmatrix.h"
 #include "Models/beatkpi.h"
+#include "Models/beatmatcher.h"
+#include "Models/ec57metrics.h"
 #include "Models/sample.h"
 #include "Models/uiconfigs.h"
 #include "Services/analyseservice.h"
@@ -84,13 +86,14 @@ private slots:
         QCOMPARE(p.rtp, 80.0f);
     }
 
-    void predicting_calcParams_zeroDenominatorsStayZero()
+    void predicting_calcParams_zeroDenominatorsAreUndefined()
     {
         Predicting p;
         p.calcParams();
-        QCOMPARE(p.se, 0.0f);
-        QCOMPARE(p.p, 0.0f);
-        QCOMPARE(p.fpr, 0.0f);
+        QCOMPARE(p.se, -1.0f);
+        QCOMPARE(p.p, -1.0f);
+        QCOMPARE(p.fpr, -1.0f);
+        QCOMPARE(p.rfn, -1.0f);
     }
 
     void sheetResult_getDif_andBounds()
@@ -158,6 +161,145 @@ private slots:
         QCOMPARE(kpi.m_PVCPrediction.tp, 4);
         QCOMPARE(kpi.m_PVCPrediction.se, 100.0f);
         QCOMPARE(kpi.m_PVCPrediction.p, 100.0f);
+    }
+
+    void aamiClass_mapsEctopicFusionAndPaced()
+    {
+        QCOMPARE(aamiClassOf(SVPB), AamiS);
+        QCOMPARE(aamiClassOf(ABERR), AamiS);
+        QCOMPARE(aamiClassOf(LBBB), AamiN);
+        QCOMPARE(aamiClassOf(VESC), AamiV);
+        QCOMPARE(aamiClassOf(RONT), AamiV);
+        QCOMPARE(aamiClassOf(FUSION), AamiF);
+        QCOMPARE(aamiClassOf(PACE), AamiQ);
+        QCOMPARE(aamiClassOf(PFUS), AamiQ);
+        QCOMPARE(aamiClassOf(RHYTHM), AamiNotQrs);
+        QCOMPARE(aamiClassOf(NOISE), AamiNotQrs);
+    }
+
+    void ec57_vebExcludesFusionAndUnclassifiableFromFalsePositives()
+    {
+        quint32 matrix[AamiClassCount][AamiClassCount] = {};
+        matrix[AamiV][AamiV] = 8;
+        matrix[AamiV][AamiN] = 2;
+        matrix[AamiN][AamiV] = 1;
+        matrix[AamiF][AamiV] = 5;
+        matrix[AamiQ][AamiV] = 4;
+        matrix[AamiN][AamiN] = 10;
+
+        const Ec57BeatScores scores = Ec57BeatScores::fromMatrix(matrix);
+        QCOMPARE(scores.veb.tp, 8);
+        QCOMPARE(scores.veb.fn, 2);
+        QCOMPARE(scores.veb.fp, 1);
+        QCOMPARE(scores.veb.tn, 10);
+        QCOMPARE(scores.veb.se, 80.0f);
+        QCOMPARE(scores.veb.p, 100.0f * 8.0f / 9.0f);
+        QCOMPARE(scores.veb.fpr, 100.0f * 1.0f / 11.0f);
+        QCOMPARE(scores.qrs.tp, 30);
+        QCOMPARE(scores.qrs.fn, 0);
+        QCOMPARE(scores.qrs.fp, 0);
+        QCOMPARE(scores.qrs.se, 100.0f);
+        QCOMPARE(scores.qrs.fpr, -1.0f);
+    }
+
+    void ec57_svebExcludesUnclassifiableFalsePositives()
+    {
+        quint32 matrix[AamiClassCount][AamiClassCount] = {};
+        matrix[AamiS][AamiS] = 4;
+        matrix[AamiN][AamiS] = 1;
+        matrix[AamiQ][AamiS] = 7;
+
+        const Ec57BeatScores scores = Ec57BeatScores::fromMatrix(matrix);
+        QCOMPARE(scores.sveb.tp, 4);
+        QCOMPARE(scores.sveb.fp, 1);
+        QCOMPARE(scores.sveb.p, 80.0f);
+    }
+
+    void ec57_runSensitivityAndPredictivityUseSeparateNumerators()
+    {
+        quint32 sensitivity[IecRunBinCount][IecRunBinCount] = {};
+        quint32 predictivity[IecRunBinCount][IecRunBinCount] = {};
+        sensitivity[2][3] = 2;
+        predictivity[3][3] = 2;
+
+        const Ec57RunScores scores = Ec57RunScores::fromMatrices(sensitivity, predictivity);
+        QCOMPARE(scores.couplet.tp, 2);
+        QCOMPARE(scores.couplet.fn, 0);
+        QCOMPARE(scores.couplet.se, 100.0f);
+        QCOMPARE(scores.couplet.ppTp, 0);
+        QCOMPARE(scores.couplet.p, -1.0f);
+        QCOMPARE(scores.shortRun.tp, 0);
+        QCOMPARE(scores.shortRun.ppTp, 2);
+        QCOMPARE(scores.shortRun.se, -1.0f);
+        QCOMPARE(scores.shortRun.p, 100.0f);
+    }
+
+    void aggregate_grossWeightsEventsAndAverageIncludesZeroSensitivity()
+    {
+        AnalyseFileProcessResult aggregate;
+        FileProcessResult first;
+        first.qrsPredict.tp = 1;
+        first.qrsPredict.fn = 1;
+        first.qrsPredict.fp = 1;
+        first.qrsPredict.calcParams(false);
+        first.pvcPredict.tp = 1;
+        first.pvcPredict.fp = 1;
+        first.pvcPredict.calcParams(true);
+
+        FileProcessResult second;
+        second.qrsPredict.tp = 9;
+        second.qrsPredict.fn = 1;
+        second.qrsPredict.calcParams(false);
+
+        FileProcessResult empty;
+        empty.qrsPredict.calcParams(false);
+
+        FileProcessResult missed;
+        missed.qrsPredict.tp = 0;
+        missed.qrsPredict.fn = 4;
+        missed.qrsPredict.calcParams(false);
+
+        aggregate.fileProcessResult = {first, second, empty, missed};
+        aggregate.calcParam();
+
+        QCOMPARE(aggregate.qrs.sensitivity.gross, 62.5f);
+        QCOMPARE(aggregate.qrs.sensitivity.average, 140.0f / 3.0f);
+        QCOMPARE(aggregate.qrs.positivePredictivity.gross, 100.0f * 10.0f / 11.0f);
+        QCOMPARE(aggregate.veb.positivePredictivity.average, 50.0f);
+        QCOMPARE(aggregate.qrs.positivePredictivity.average, 75.0f);
+    }
+
+    void matchBeats_uses150MillisecondWindowAndLearningPeriod()
+    {
+        const int sampleRate = 178;
+        const int window = matchWindowSamples(sampleRate);
+        QVERIFY(window >= 26 && window <= 27);
+
+        const QVector<int> referenceSamples = {100, 1000, 2000, 3000};
+        const QVector<quint8> referenceTypes = {1, 1, 5, 1};
+        const QVector<int> testSamples = {110, 1010, 2005, 4000};
+        const QVector<quint8> testTypes = {1, 1, 1, 5};
+
+        const BeatMatchResult scored = matchBeats(referenceSamples, referenceTypes,
+                                                  testSamples, testTypes,
+                                                  sampleRate, 500);
+        QCOMPARE(scored.referenceBeats.size(), 3);
+        QCOMPARE(scored.pairs.size(), 4);
+
+        int truePositives = 0;
+        int falseNegatives = 0;
+        int falsePositives = 0;
+        for (const AlignedPair &pair : scored.pairs) {
+            if (pair.refType >= 0 && pair.testType >= 0)
+                ++truePositives;
+            else if (pair.refType >= 0)
+                ++falseNegatives;
+            else
+                ++falsePositives;
+        }
+        QCOMPARE(truePositives, 2);
+        QCOMPARE(falseNegatives, 1);
+        QCOMPARE(falsePositives, 1);
     }
 
     void sample_datastream_roundtrip()
@@ -245,7 +387,7 @@ private slots:
     void analyseService_emptyPathsFail()
     {
         AnalyseService service;
-        QVERIFY(!service.analyse());
+        QVERIFY(!service.run());
     }
 
     void analyseService_matchingCsvPair_emitsProgressAndWritesReport()
@@ -268,12 +410,55 @@ private slots:
         QSignalSpy progressSpy(&service, &AnalyseService::sigProgress);
         QSignalSpy logSpy(&service, &AnalyseService::sigAppendLog);
 
-        QVERIFY(service.analyse());
+        QVERIFY(service.run());
         QCOMPARE(progressSpy.count(), 1);
         QCOMPARE(progressSpy.takeFirst().at(0).toInt(), 1);
         QVERIFY(logSpy.count() >= 1);
         QVERIFY(QFile::exists(dir.filePath(QStringLiteral("Report.csv"))));
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("Report_shutdown.csv"))));
+        QVERIFY(QFile::exists(dir.filePath(QStringLiteral("Report_runs.csv"))));
         QVERIFY(QFile::exists(dir.filePath(QStringLiteral("refVSdet.csv"))));
+
+        QFile report(dir.filePath(QStringLiteral("Report.csv")));
+        QVERIFY(report.open(QIODevice::ReadOnly | QIODevice::Text));
+        const QString reportText = QString::fromUtf8(report.readAll());
+        QVERIFY(reportText.contains(QStringLiteral("QRS_Se")));
+        QVERIFY(reportText.contains(QStringLiteral("PVC_Se")));
+        QVERIFY(reportText.contains(QStringLiteral("Normal_Se")));
+        QVERIFY(!reportText.contains(QStringLiteral("Fusion_Se")));
+        QVERIFY(reportText.contains(QStringLiteral("Sensitivity gross")));
+        QVERIFY(reportText.contains(QStringLiteral("100.00")));
+    }
+
+    void beatProfile_foldsUnselectedSubtypeIntoItsGroup()
+    {
+        const BeatTestProfile grouped;
+        QCOMPARE(resolveTestClass(FUSION, grouped), ClassPvc);
+        QCOMPARE(resolveTestClass(VESC, grouped), ClassPvc);
+        QCOMPARE(resolveTestClass(kInterpolatedAnnotation, grouped), ClassPvc);
+        QCOMPARE(resolveTestClass(LBBB, grouped), ClassNormal);
+        QCOMPARE(resolveTestClass(SVPB, grouped), ClassNormal);
+        QCOMPARE(resolveTestClass(UNKNOWN, grouped), ClassUnknown);
+
+        quint32 matrix[TestBeatClassCount][TestBeatClassCount] = {};
+        accumulateTestBeat(matrix, FUSION, PVC, grouped);
+        const TestClassCounts pvc = scoreTestClass(matrix, ClassPvc, grouped.activeClasses());
+        QCOMPARE(pvc.tp, 1);
+        QCOMPARE(pvc.fn, 0);
+        QCOMPARE(pvc.fp, 0);
+
+        BeatTestProfile separate = grouped;
+        separate.separateFusion = true;
+        separate.separatePvc = true;
+        quint32 split[TestBeatClassCount][TestBeatClassCount] = {};
+        accumulateTestBeat(split, FUSION, PVC, separate);
+        const QVector<int> active = separate.activeClasses();
+        QVERIFY(active.contains(ClassFusion));
+        const TestClassCounts fusion = scoreTestClass(split, ClassFusion, active);
+        const TestClassCounts pvcSplit = scoreTestClass(split, ClassPvc, active);
+        QCOMPARE(fusion.tp, 0);
+        QCOMPARE(fusion.fn, 1);
+        QCOMPARE(pvcSplit.fp, 1);
     }
 
     void exportService_rawSample_writesBin()
