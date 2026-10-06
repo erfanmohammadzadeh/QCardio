@@ -1,4 +1,4 @@
-# QCardio 1.0.0
+# QCardio 
 
 Qt desktop application for viewing PhysioNet WFDB electrocardiogram records, exporting them, and comparing an algorithm’s beat CSV files with a reference annotation set.
 
