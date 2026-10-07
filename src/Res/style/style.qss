@@ -551,12 +551,10 @@ QLabel#labelVersion {
 
 /* ---------- CONTROLS ---------- */
 QPushButton, QToolButton {
-    min-height: 32px;
+    min-height: 20px;
 }
 
-QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox {
-    min-height: 30px;
-}
+
 
 /* ============================================================
    END OF STYLESHEET

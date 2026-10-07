@@ -18,7 +18,6 @@ SOURCES += \
     Controllers/signalviewcontroller.cpp \
     Models/aamiclass.cpp \
     Models/beattestprofile.cpp \
-    Models/beatkpi.cpp \
     Models/beatmatcher.cpp \
     Models/csv.cpp \
     Models/ec57metrics.cpp \
@@ -48,7 +47,6 @@ HEADERS += \
     Controllers/signalviewcontroller.h \
     Models/aamiclass.h \
     Models/beattestprofile.h \
-    Models/beatkpi.h \
     Models/beatmatcher.h \
     Models/csv.h \
     Models/ec57metrics.h \

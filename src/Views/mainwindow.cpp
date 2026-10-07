@@ -407,12 +407,6 @@ void MainWindow::on_comboBoxDatabaseName_currentTextChanged(const QString &arg1)
     ui->spinBoxCompareOfset->setValue(IecLearningPeriodSeconds * sampleRate);
 }
 
-
-void MainWindow::on_toolButtonClearLogs_clicked()
-{
-    ui->textEditLogs->clear();
-}
-
 void MainWindow::on_toolButtonHelp_clicked()
 {
     QFile resource(":/Res/help/Physionet Help.pdf");

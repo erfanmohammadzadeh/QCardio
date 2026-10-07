@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1180</width>
-    <height>720</height>
+    <width>1208</width>
+    <height>782</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -20,56 +20,223 @@
    <string>QCardio</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayoutRoot">
-    <property name="spacing">
-     <number>8</number>
-    </property>
-    <property name="leftMargin">
-     <number>8</number>
-    </property>
-    <property name="topMargin">
-     <number>8</number>
-    </property>
-    <property name="rightMargin">
-     <number>8</number>
-    </property>
-    <property name="bottomMargin">
-     <number>8</number>
-    </property>
-    <item>
-     <widget class="QSplitter" name="splitterMain">
-      <property name="orientation">
-       <enum>Qt::Orientation::Horizontal</enum>
-      </property>
-      <property name="childrenCollapsible">
-       <bool>false</bool>
-      </property>
-      <widget class="QWidget" name="panelTrace">
-       <layout class="QVBoxLayout" name="verticalLayoutTrace">
-        <property name="spacing">
-         <number>6</number>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="0" column="0">
+     <layout class="QGridLayout" name="gridLayout_2" rowstretch="0,1">
+      <item row="1" column="0">
+       <widget class="QSplitter" name="splitterMain">
+        <property name="orientation">
+         <enum>Qt::Orientation::Horizontal</enum>
         </property>
-        <property name="leftMargin">
-         <number>0</number>
+        <property name="childrenCollapsible">
+         <bool>false</bool>
         </property>
-        <property name="topMargin">
-         <number>0</number>
-        </property>
-        <property name="rightMargin">
-         <number>0</number>
-        </property>
-        <property name="bottomMargin">
-         <number>0</number>
-        </property>
-        <item>
-         <widget class="QWidget" name="widgetSignal" native="true">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-            <horstretch>1</horstretch>
-            <verstretch>1</verstretch>
-           </sizepolicy>
+        <widget class="QWidget" name="panelTrace">
+         <layout class="QVBoxLayout" name="verticalLayoutTrace">
+          <property name="spacing">
+           <number>6</number>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayoutSignal">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QWidget" name="widgetSignal" native="true">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>1</horstretch>
+              <verstretch>1</verstretch>
+             </sizepolicy>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayoutSignal">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+            </layout>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayoutLog">
+            <item>
+             <widget class="QTextEdit" name="textEditLogs">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>120</height>
+               </size>
+              </property>
+              <property name="readOnly">
+               <bool>true</bool>
+              </property>
+              <property name="placeholderText">
+               <string>Messages appear here.</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <layout class="QGridLayout" name="gridLayoutProgressBar"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QTabWidget" name="tabWidget">
+         <property name="minimumSize">
+          <size>
+           <width>340</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>460</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="tabPosition">
+          <enum>QTabWidget::TabPosition::East</enum>
+         </property>
+         <property name="currentIndex">
+          <number>0</number>
+         </property>
+         <property name="documentMode">
+          <bool>false</bool>
+         </property>
+         <widget class="QWidget" name="tab">
+          <attribute name="title">
+           <string>Database</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutDatabase" stretch="1,0">
+           <property name="spacing">
+            <number>8</number>
+           </property>
+           <item>
+            <widget class="QGroupBox" name="groupRecords">
+             <property name="title">
+              <string>Records</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayoutRecords" stretch="0,1,0">
+              <item>
+               <widget class="QLabel" name="labelData">
+                <property name="text">
+                 <string>Select a header, then read the record.</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QListWidget" name="listWidgetItems">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>120</height>
+                 </size>
+                </property>
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayoutRecordButtons">
+                <item>
+                 <spacer name="horizontalSpacer">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>40</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButtonSetPath">
+                  <property name="toolTip">
+                   <string>Folder that contains the .hea files</string>
+                  </property>
+                  <property name="text">
+                   <string>Data Base Path</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_2">
+                  <property name="orientation">
+                   <enum>Qt::Orientation::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>30</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupHeader">
+             <property name="title">
+              <string>Header</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayoutHeader">
+              <item>
+               <widget class="QTextEdit" name="textEditSignalInfo">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>72</height>
+                 </size>
+                </property>
+                <property name="maximumSize">
+                 <size>
+                  <width>16777215</width>
+                  <height>140</height>
+                 </size>
+                </property>
+                <property name="readOnly">
+                 <bool>true</bool>
+                </property>
+                <property name="placeholderText">
+                 <string>Record header details appear after you select a file.</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tabExport">
+          <attribute name="title">
+           <string>Export</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutExportPage">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -82,422 +249,184 @@
            <property name="bottomMargin">
             <number>0</number>
            </property>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayoutLog">
-          <item>
-           <widget class="QTextEdit" name="textEditLogs">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>120</height>
-             </size>
-            </property>
-            <property name="readOnly">
-             <bool>true</bool>
-            </property>
-            <property name="placeholderText">
-             <string>Messages appear here.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="toolButtonClearLogs">
-            <property name="toolTip">
-             <string>Clear the message log</string>
-            </property>
-            <property name="text">
-             <string>Clear</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QGridLayout" name="gridLayoutProgressBar"/>
-        </item>
-       </layout>
-      </widget>
-      <widget class="QTabWidget" name="tabWidget">
-       <property name="minimumSize">
-        <size>
-         <width>340</width>
-         <height>0</height>
-        </size>
-       </property>
-       <property name="maximumSize">
-        <size>
-         <width>460</width>
-         <height>16777215</height>
-        </size>
-       </property>
-       <property name="tabPosition">
-        <enum>QTabWidget::TabPosition::East</enum>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <property name="documentMode">
-        <bool>false</bool>
-       </property>
-       <widget class="QWidget" name="tab">
-        <attribute name="title">
-         <string>Database</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayoutDatabase" stretch="1,0">
-         <property name="spacing">
-          <number>8</number>
-         </property>
-         <item>
-          <widget class="QGroupBox" name="groupRecords">
-           <property name="title">
-            <string>Records</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayoutRecords" stretch="0,1,0">
-            <item>
-             <widget class="QLabel" name="labelData">
-              <property name="text">
-               <string>Select a header, then read the record.</string>
+           <item>
+            <widget class="QScrollArea" name="scrollExport">
+             <property name="frameShape">
+              <enum>QFrame::Shape::NoFrame</enum>
+             </property>
+             <property name="widgetResizable">
+              <bool>true</bool>
+             </property>
+             <widget class="QWidget" name="scrollExportContents">
+              <property name="geometry">
+               <rect>
+                <x>0</x>
+                <y>0</y>
+                <width>430</width>
+                <height>670</height>
+               </rect>
               </property>
-              <property name="wordWrap">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QListWidget" name="listWidgetItems">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>120</height>
-               </size>
-              </property>
-              <property name="alternatingRowColors">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayoutRecordButtons">
-              <item>
-               <widget class="QPushButton" name="pushButtonSetPath">
-                <property name="toolTip">
-                 <string>Folder that contains the .hea files</string>
-                </property>
-                <property name="text">
-                 <string>Set path</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButtonRead">
-                <property name="text">
-                 <string>Read</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupHeader">
-           <property name="title">
-            <string>Header</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayoutHeader">
-            <item>
-             <widget class="QTextEdit" name="textEditSignalInfo">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>72</height>
-               </size>
-              </property>
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>140</height>
-               </size>
-              </property>
-              <property name="readOnly">
-               <bool>true</bool>
-              </property>
-              <property name="placeholderText">
-               <string>Record header details appear after you select a file.</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tabExport">
-        <attribute name="title">
-         <string>Export</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayoutExportPage">
-         <property name="leftMargin">
-          <number>0</number>
-         </property>
-         <property name="topMargin">
-          <number>0</number>
-         </property>
-         <property name="rightMargin">
-          <number>0</number>
-         </property>
-         <property name="bottomMargin">
-          <number>0</number>
-         </property>
-         <item>
-          <widget class="QScrollArea" name="scrollExport">
-           <property name="frameShape">
-            <enum>QFrame::Shape::NoFrame</enum>
-           </property>
-           <property name="widgetResizable">
-            <bool>true</bool>
-           </property>
-           <widget class="QWidget" name="scrollExportContents">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>430</width>
-              <height>670</height>
-             </rect>
-            </property>
-            <layout class="QVBoxLayout" name="verticalLayoutExport">
-             <item>
-              <widget class="QGroupBox" name="groupSignal">
-               <property name="title">
-                <string>Signal</string>
-               </property>
-               <layout class="QFormLayout" name="formSignal">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label">
-                  <property name="text">
-                   <string>Source rate (Hz)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QSpinBox" name="spinBoxSourceFreq">
-                  <property name="minimum">
-                   <number>1</number>
-                  </property>
-                  <property name="maximum">
-                   <number>1000</number>
-                  </property>
-                  <property name="value">
-                   <number>360</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="labelTargetFreq">
-                  <property name="text">
-                   <string>Target rate (Hz)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QSpinBox" name="spinBoxTargetFreq">
-                  <property name="minimum">
-                   <number>50</number>
-                  </property>
-                  <property name="maximum">
-                   <number>1000</number>
-                  </property>
-                  <property name="value">
-                   <number>178</number>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="labelGain">
-                  <property name="text">
-                   <string>Gain</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QDoubleSpinBox" name="doubleSpinBoxGain">
-                  <property name="decimals">
-                   <number>2</number>
-                  </property>
-                  <property name="minimum">
-                   <double>0.100000000000000</double>
-                  </property>
-                  <property name="value">
-                   <double>1.000000000000000</double>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="labelOffset">
-                  <property name="text">
-                   <string>DC offset</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
-                 <widget class="QSpinBox" name="spinBoxOffset">
-                  <property name="minimum">
-                   <number>-2000</number>
-                  </property>
-                  <property name="maximum">
-                   <number>2000</number>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="groupLeads">
-               <property name="title">
-                <string>Lead mapping</string>
-               </property>
-               <layout class="QFormLayout" name="formLeads">
-                <item row="0" column="0">
-                 <widget class="QLabel" name="label_2">
-                  <property name="text">
-                   <string>Signal 1</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="0" column="1">
-                 <widget class="QComboBox" name="comboBoxSignal1">
-                  <item>
-                   <property name="text">
-                    <string>I</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>II</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>V</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>None</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_3">
-                  <property name="text">
-                   <string>Signal 2</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
-                 <widget class="QComboBox" name="comboBoxSignal2">
-                  <property name="currentIndex">
-                   <number>1</number>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>I</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>II</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>V</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>None</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_4">
-                  <property name="text">
-                   <string>Signal 3</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
-                 <widget class="QComboBox" name="comboBoxSignal3">
-                  <property name="currentIndex">
-                   <number>2</number>
-                  </property>
-                  <item>
-                   <property name="text">
-                    <string>I</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>II</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>V</string>
-                   </property>
-                  </item>
-                  <item>
-                   <property name="text">
-                    <string>None</string>
-                   </property>
-                  </item>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
-             </item>
-             <item>
-              <widget class="QGroupBox" name="groupOutput">
-               <property name="title">
-                <string>Output</string>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayoutOutput">
-                <item>
-                 <layout class="QFormLayout" name="formDatabase">
+              <layout class="QVBoxLayout" name="verticalLayoutExport">
+               <item>
+                <widget class="QGroupBox" name="groupLeads">
+                 <property name="title">
+                  <string>Lead mapping</string>
+                 </property>
+                 <layout class="QFormLayout" name="formLeads">
                   <item row="0" column="0">
-                   <widget class="QLabel" name="label_6">
+                   <widget class="QLabel" name="label_2">
                     <property name="text">
-                     <string>Database</string>
+                     <string>Signal 1</string>
                     </property>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="QComboBox" name="comboBoxDatabaseName"/>
+                   <widget class="QComboBox" name="comboBoxSignal1">
+                    <item>
+                     <property name="text">
+                      <string>I</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>II</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>None</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="1" column="0">
+                   <widget class="QLabel" name="label_3">
+                    <property name="text">
+                     <string>Signal 2</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="1" column="1">
+                   <widget class="QComboBox" name="comboBoxSignal2">
+                    <property name="currentIndex">
+                     <number>1</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>I</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>II</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>None</string>
+                     </property>
+                    </item>
+                   </widget>
+                  </item>
+                  <item row="2" column="0">
+                   <widget class="QLabel" name="label_4">
+                    <property name="text">
+                     <string>Signal 3</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item row="2" column="1">
+                   <widget class="QComboBox" name="comboBoxSignal3">
+                    <property name="currentIndex">
+                     <number>2</number>
+                    </property>
+                    <item>
+                     <property name="text">
+                      <string>I</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>II</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>V</string>
+                     </property>
+                    </item>
+                    <item>
+                     <property name="text">
+                      <string>None</string>
+                     </property>
+                    </item>
+                   </widget>
                   </item>
                  </layout>
-                </item>
-                <item>
-                 <widget class="QLabel" name="label_7">
-                  <property name="text">
-                   <string>Format</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <layout class="QHBoxLayout" name="horizontalLayoutFormat">
+                </widget>
+               </item>
+               <item>
+                <widget class="QGroupBox" name="groupOutput">
+                 <property name="title">
+                  <string>Output</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayoutOutput">
                   <item>
-                   <widget class="QRadioButton" name="radioButtonRawSample">
+                   <layout class="QFormLayout" name="formDatabase">
+                    <item row="0" column="0">
+                     <widget class="QLabel" name="label_6">
+                      <property name="text">
+                       <string>Database</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="0" column="1">
+                     <widget class="QComboBox" name="comboBoxDatabaseName"/>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QLabel" name="label_7">
                     <property name="text">
-                     <string>Raw data</string>
+                     <string>Format</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <layout class="QHBoxLayout" name="horizontalLayoutFormat">
+                    <item>
+                     <widget class="QRadioButton" name="radioButtonRawSample">
+                      <property name="text">
+                       <string>Raw data</string>
+                      </property>
+                      <property name="checked">
+                       <bool>true</bool>
+                      </property>
+                     </widget>
+                    </item>
+                    <item>
+                     <widget class="QRadioButton" name="radioButtonRec7">
+                      <property name="text">
+                       <string>Rec7</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxExportCSV">
+                    <property name="text">
+                     <string>Write beat CSV</string>
                     </property>
                     <property name="checked">
                      <bool>true</bool>
@@ -505,255 +434,341 @@
                    </widget>
                   </item>
                   <item>
-                   <widget class="QRadioButton" name="radioButtonRec7">
+                   <widget class="QCheckBox" name="checkBoxCompression">
                     <property name="text">
-                     <string>Rec7</string>
+                     <string>Compression</string>
+                    </property>
+                    <property name="checked">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkBoxExportAllData">
+                    <property name="text">
+                     <string>Export every record</string>
                     </property>
                    </widget>
                   </item>
                  </layout>
-                </item>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacerExport">
+                 <property name="orientation">
+                  <enum>Qt::Orientation::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>8</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </widget>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonExport">
+             <property name="text">
+              <string>Export</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="Compare">
+          <attribute name="title">
+           <string>Compare</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutComparePage" stretch="1,1,0,0">
+           <property name="spacing">
+            <number>8</number>
+           </property>
+           <item>
+            <widget class="QGroupBox" name="groupReference">
+             <property name="title">
+              <string>Reference</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayoutReference">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayoutData1">
                 <item>
-                 <widget class="QCheckBox" name="checkBoxExportCSV">
+                 <widget class="QLabel" name="labelData1">
                   <property name="text">
-                   <string>Write beat CSV</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
+                   <string>Standard dataset</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QCheckBox" name="checkBoxCompression">
+                 <widget class="QPushButton" name="pushButtonData1">
                   <property name="text">
-                   <string>Compression</string>
-                  </property>
-                  <property name="checked">
-                   <bool>true</bool>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="checkBoxExportAllData">
-                  <property name="text">
-                   <string>Export every record</string>
+                   <string>Select</string>
                   </property>
                  </widget>
                 </item>
                </layout>
+              </item>
+              <item>
+               <widget class="QListWidget" name="listWidgetDir1">
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="groupAlgorithm">
+             <property name="title">
+              <string>Algorithm</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayoutAlgorithm">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayoutData2">
+                <item>
+                 <widget class="QLabel" name="labelData2">
+                  <property name="text">
+                   <string>Results to score</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="pushButtonData2">
+                  <property name="text">
+                   <string>Select</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QListWidget" name="listWidgetDir2">
+                <property name="alternatingRowColors">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <layout class="QFormLayout" name="formCompare">
+             <item row="0" column="0">
+              <widget class="QLabel" name="labelCompareOfset">
+               <property name="toolTip">
+                <string>First sample of the test period. The first 5 minutes are the learning period. Set 0 to score the whole file.</string>
+               </property>
+               <property name="text">
+                <string>Learning end (samples)</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QSpinBox" name="spinBoxCompareOfset">
+               <property name="toolTip">
+                <string>Sample index where scoring starts. 53400 is 5 minutes at 178 Hz. Set 0 to score the whole file.</string>
+               </property>
+               <property name="maximum">
+                <number>1000000</number>
+               </property>
+               <property name="value">
+                <number>53400</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonCompare">
+             <property name="text">
+              <string>Compare</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="tab_2">
+          <attribute name="title">
+           <string>Info</string>
+          </attribute>
+          <layout class="QVBoxLayout" name="verticalLayoutInfo">
+           <property name="spacing">
+            <number>12</number>
+           </property>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayoutVersion">
+             <item>
+              <widget class="QLabel" name="labelVersionTxt">
+               <property name="text">
+                <string>Version</string>
+               </property>
               </widget>
              </item>
              <item>
-              <spacer name="verticalSpacerExport">
+              <widget class="QLabel" name="labelVersion">
+               <property name="text">
+                <string>---</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacerVersion">
                <property name="orientation">
-                <enum>Qt::Orientation::Vertical</enum>
+                <enum>Qt::Orientation::Horizontal</enum>
                </property>
                <property name="sizeHint" stdset="0">
                 <size>
-                 <width>20</width>
-                 <height>8</height>
+                 <width>40</width>
+                 <height>20</height>
                 </size>
                </property>
               </spacer>
              </item>
             </layout>
-           </widget>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonExport">
-           <property name="text">
-            <string>Export</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="Compare">
-        <attribute name="title">
-         <string>Compare</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayoutComparePage" stretch="1,1,0,0">
-         <property name="spacing">
-          <number>8</number>
-         </property>
-         <item>
-          <widget class="QGroupBox" name="groupReference">
-           <property name="title">
-            <string>Reference</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayoutReference">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayoutData1">
-              <item>
-               <widget class="QLabel" name="labelData1">
-                <property name="text">
-                 <string>Standard dataset</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButtonData1">
-                <property name="text">
-                 <string>Select</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QListWidget" name="listWidgetDir1">
-              <property name="alternatingRowColors">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QGroupBox" name="groupAlgorithm">
-           <property name="title">
-            <string>Algorithm</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayoutAlgorithm">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayoutData2">
-              <item>
-               <widget class="QLabel" name="labelData2">
-                <property name="text">
-                 <string>Results to score</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="pushButtonData2">
-                <property name="text">
-                 <string>Select</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-            <item>
-             <widget class="QListWidget" name="listWidgetDir2">
-              <property name="alternatingRowColors">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </widget>
-         </item>
-         <item>
-          <layout class="QFormLayout" name="formCompare">
-           <item row="0" column="0">
-            <widget class="QLabel" name="labelCompareOfset">
-             <property name="toolTip">
-              <string>First sample of the test period. The first 5 minutes are the learning period. Set 0 to score the whole file.</string>
-             </property>
-             <property name="text">
-              <string>Learning end (samples)</string>
-             </property>
-            </widget>
            </item>
-           <item row="0" column="1">
-            <widget class="QSpinBox" name="spinBoxCompareOfset">
-             <property name="toolTip">
-              <string>Sample index where scoring starts. 53400 is 5 minutes at 178 Hz. Set 0 to score the whole file.</string>
-             </property>
-             <property name="maximum">
-              <number>1000000</number>
-             </property>
-             <property name="value">
-              <number>53400</number>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pushButtonCompare">
-           <property name="text">
-            <string>Compare</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>Info</string>
-        </attribute>
-        <layout class="QVBoxLayout" name="verticalLayoutInfo">
-         <property name="spacing">
-          <number>12</number>
-         </property>
-         <item>
-          <layout class="QHBoxLayout" name="horizontalLayoutVersion">
            <item>
-            <widget class="QLabel" name="labelVersionTxt">
+            <widget class="QLabel" name="labelAbout">
              <property name="text">
-              <string>Version</string>
+              <string>Read a WFDB record, export it, then compare an algorithm CSV folder with a reference folder.</string>
+             </property>
+             <property name="wordWrap">
+              <bool>true</bool>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QLabel" name="labelVersion">
+            <widget class="QPushButton" name="toolButtonHelp">
              <property name="text">
-              <string>---</string>
+              <string>Open help</string>
              </property>
             </widget>
            </item>
            <item>
-            <spacer name="horizontalSpacerVersion">
+            <spacer name="verticalSpacerInfo">
              <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
+              <enum>Qt::Orientation::Vertical</enum>
              </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>40</width>
-               <height>20</height>
+               <width>20</width>
+               <height>40</height>
               </size>
              </property>
             </spacer>
            </item>
           </layout>
-         </item>
-         <item>
-          <widget class="QLabel" name="labelAbout">
+         </widget>
+        </widget>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QGroupBox" name="groupSignal">
+        <layout class="QGridLayout" name="gridLayout">
+         <item row="0" column="4">
+          <widget class="QLabel" name="labelGain">
            <property name="text">
-            <string>Read a WFDB record, export it, then compare an algorithm CSV folder with a reference folder.</string>
-           </property>
-           <property name="wordWrap">
-            <bool>true</bool>
+            <string>Gain</string>
            </property>
           </widget>
          </item>
-         <item>
-          <widget class="QPushButton" name="toolButtonHelp">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label">
            <property name="text">
-            <string>Open help</string>
+            <string>Source rate (Hz)</string>
            </property>
           </widget>
          </item>
-         <item>
-          <spacer name="verticalSpacerInfo">
+         <item row="0" column="6">
+          <widget class="QLabel" name="labelOffset">
+           <property name="text">
+            <string>DC offset</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="2">
+          <widget class="QLabel" name="labelTargetFreq">
+           <property name="text">
+            <string>Target rate (Hz)</string>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="8">
+          <spacer name="horizontalSpacer_4">
            <property name="orientation">
-            <enum>Qt::Orientation::Vertical</enum>
+            <enum>Qt::Orientation::Horizontal</enum>
            </property>
            <property name="sizeHint" stdset="0">
             <size>
-             <width>20</width>
-             <height>40</height>
+             <width>40</width>
+             <height>20</height>
             </size>
            </property>
           </spacer>
          </item>
+         <item row="0" column="3">
+          <widget class="QSpinBox" name="spinBoxTargetFreq">
+           <property name="minimum">
+            <number>50</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>178</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="7">
+          <widget class="QSpinBox" name="spinBoxOffset">
+           <property name="minimum">
+            <number>-2000</number>
+           </property>
+           <property name="maximum">
+            <number>2000</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QSpinBox" name="spinBoxSourceFreq">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>360</number>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="5">
+          <widget class="QDoubleSpinBox" name="doubleSpinBoxGain">
+           <property name="decimals">
+            <number>2</number>
+           </property>
+           <property name="minimum">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="0" column="9">
+          <widget class="QPushButton" name="pushButtonRead">
+           <property name="text">
+            <string>Read</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </widget>
-      </widget>
-     </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
